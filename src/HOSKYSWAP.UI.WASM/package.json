@@ -1,0 +1,17 @@
+{
+  "name": "HOSKYSWAP.UI.WASM",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build:css": "tailwindcss -i wwwroot/css/app.css -o wwwroot/dist/css/app.min.css",
+    "watch:css": "tailwindcss -w wwwroot/css/app.css -o wwwroot/dist/css/app.min.css"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "tailwindcss": "^2.2.19",
+    "autoprefixer": "^10.3.7"
+  }
+}
