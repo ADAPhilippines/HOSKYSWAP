@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "HOSKYSWAP.Server.Worker"
+		},
+		{
+			"path": "HOSKYSWAP.Common"
+		},
+		{
+			"path": "cardanosharp-wallet/CardanoSharp.Wallet"
+		}
+	],
+	"settings": {}
+}

@@ -11,4 +11,9 @@
     <PackageReference Include="Blockfrost.Api" Version="1.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HOSKYSWAP.Common\HOSKYSWAP.Common.csproj" />
+    <ProjectReference Include="..\cardanosharp-wallet\CardanoSharp.Wallet\CardanoSharp.Wallet.csproj" />
+  </ItemGroup>
 </Project>
