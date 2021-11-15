@@ -1,4 +1,4 @@
 **/bin/***
 **/obj/*
 **/node_modules/**
-src/HOSKYSWAP.Server.Worker/appsettings.Development.json
+**/appsettings.*.json
