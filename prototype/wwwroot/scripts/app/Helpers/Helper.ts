@@ -12,6 +12,15 @@ class Helper
         }));
     }
 
+    public static IsJsonString = (str: string): boolean => {
+        try {
+            JSON.parse(str);
+        } catch (e) {
+            return false;
+        }
+        return true;
+    }
+
     public static HexToBytes = (str: string): Uint8Array => Uint8Array.from(Buffer.from(str, 'hex'));
 }
 

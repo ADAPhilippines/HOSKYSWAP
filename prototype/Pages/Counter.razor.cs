@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.Components;
 using prototype.Models;
 using prototype.Services;
@@ -20,15 +21,21 @@ public partial class Counter
 
         await CardanoWalletInteropService.SendAssetsAsync(new TxOutput()
         {
-            Address = "",
-            Amount = new List<Asset>()
+            Address = "addr1qxr04lmt3m06pjf4w4xer9jrh54huql75usxla8temajs7jp77sg0d3zl7fg84na9lkrteqfuhvraxgrc2y83yz4me7s28rzae",
+            Amount = new List<Asset>
             {
-                new Asset()
+                new Asset
+                {
+                    Unit = "a0028f350aaabe0545fdcb56b039bfb08e4bb4d8c4d7c3c7d481c235484f534b59",
+                    Quantity = 10
+                },
+                new Asset
                 {
                     Unit = "lovelace",
-                    Quantity = 100000000
+                    Quantity = 69_4200 + 1_500_000
                 }
             }
-        });
+        },
+         JsonSerializer.Serialize(new {rate="0.0000001", action="sell"}));
     }
 }
