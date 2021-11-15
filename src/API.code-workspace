@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "HOSKYSWAP.Server.API"
+		},
+		{
+			"path": "HOSKYSWAP.Common"
+		}
+	],
+	"settings": {}
+}
