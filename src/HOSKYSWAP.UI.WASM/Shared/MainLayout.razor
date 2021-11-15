@@ -1,0 +1,67 @@
+﻿@inherits LayoutComponentBase
+<MudThemeProvider/>
+<div class="page">
+    <div class="fixed top-0 left-0 w-screen h-screen bg-aph-darkblue z-0">
+        @* Center Right *@
+        <div class="first-motion rounded-full blurred-circle-one dark:dark-blurred-circle-one z-0 opacity-50"></div>
+
+        @* Top Left *@
+        <div class="second-motion rounded-full blurred-circle-two dark:dark-blurred-circle-two z-0"></div>
+
+        @* Lower Top Left *@
+        <div class="third-motion rounded-full blurred-circle-three dark:dark-blurred-circle-three z-0"></div>
+
+        @* Top Right Semi Center *@
+        <div class="first-motion rounded-full blurred-circle-four dark:dark-blurred-circle-four z-0"></div>
+
+        @* Bottom Right*@
+        <div class="first-motion rounded-full blurred-circle-five dark:dark-blurred-circle-five z-0"></div>
+
+        @* Bottom Left*@
+        <div class="first-motion rounded-full blurred-circle-six dark:dark-blurred-circle-six z-0"></div>
+    </div>
+    @* Header *@
+    <div class="sticky top-0 h-[4.5rem] backdrop-filter backdrop-blur-[5px] bg-transparent-dark w-screen flex justify-center z-10">
+        <div class="max-w-header w-full flex flex-row justify-between items-center">
+            <NavLink href="/">
+                <img class="h-[3rem] w-[3rem] inline mr-[5px]" src="images/hosky.webp" alt="Hosky">
+                <div class="text-white font-semibold inline">$HOSKY SWAP</div>
+            </NavLink>
+            <div class="text-white font-semibold"><span class="text-currency">1 $ADA</span> = <span class="text-currency">1,000,000 $HOSKY</span> </div>
+            <div class="text-white font-semibold"><span class="text-currency">$100,000</span> MARKETCAP</div>
+            <MudButton Class="text-sm bg-gradient-to-r from-aph-indigo to-aph-blue filter brightness-100 hover:brightness-125 text-white font-semibold rounded-lg p-3 normal-case">
+                <MudIcon Icon="@Icons.Filled.AccountBalanceWallet" Class="mr-2"/> Connect Wallet
+            </MudButton>
+        </div>
+    </div>
+    <main class="w-screen h-full z-0 flex justify-center">
+        @* Content *@
+        <article class="w-full flex flex-col align-center">
+            @Body
+        </article>
+    </main>
+    <footer class="w-full flex justify-center text-white z-10 backdrop-filter backdrop-blur-[5px] bg-transparent-dark w-screen font-semibold">
+        <div class="flex h-[5rem] text-center items-center justify-around flex-row text-white max-w-header w-full">
+            <div class="flex h-full items-center">
+                <NavLink href="/">
+                    <APHLogo/>
+                </NavLink>
+                <div class="mt-[6px] ml-4 mr-[6px] ">©</div>
+                <p class="font-extralight mt-[6px] cursor-default">2021 ADAPH. All rights reserved</p>
+            </div>
+
+            <div class="grid grid-cols-2 divide-x divide-gray-500 mt-4 md:mt-0 lg:mt-0 gap-[0.3rem] pt-[6px]">
+                <div>
+                    <div>
+                        <NavLink href="https://adaph.io/terms" class="p-0 font-extralight text-white normal-case text-base">Terms of Use</NavLink>
+                    </div>
+                </div>
+                <div>
+                    <div class="ml-4">
+                        <NavLink href="https://adaph.io/privacy-policy" class="p-0 font-extralight text-white normal-case text-base">Privacy Policy</NavLink>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+</div>
