@@ -1,2 +1,5 @@
 **/bin/***
-**/obj/**
+**/obj/*
+**/node_modules/**
+**/appsettings.Development.json
+**/appsettings.json
