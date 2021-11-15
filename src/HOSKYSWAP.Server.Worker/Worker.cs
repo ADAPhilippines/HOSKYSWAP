@@ -20,6 +20,7 @@ public class Worker : BackgroundService
 {
     private readonly ILogger<Worker> _logger;
     private readonly IConfiguration _config;
+    private readonly HoskyDbContext _dbContext;
     private string _assetPolicyId { get; set; } = string.Empty;
     private string _assetName { get; set; } = string.Empty;
     private string _walletSeed { get; set; } = string.Empty;
@@ -35,11 +36,12 @@ public class Worker : BackgroundService
     private PublicKey? _walletPublicKey { get; set; } = null;
     private PrivateKey? _walletPrivateKey { get; set; } = null;
 
-    public Worker(ILogger<Worker> logger, IConfiguration config)
+    public Worker(ILogger<Worker> logger, IConfiguration config, HoskyDbContext dbContext)
     {
         // Load Configurations
         _logger = logger;
         _config = config;
+        _dbContext = dbContext;
         _assetPolicyId = _config["AssetPolicyId"];
         _assetName = _config["AssetName"];
         _walletSeed = _config["WalletSeed"];
@@ -67,24 +69,24 @@ public class Worker : BackgroundService
 
             await SendTxAsync(
                 _walletAddressString,
+                10000000 + 694200,
+                null,
+                (7283, new { action = "buy", rate = "0.000002" })
+            );
+
+            await SendTxAsync(
+                _walletAddressString,
                 1500000 + 694200,
                 (_assetPolicyId, _assetName, 100),
                 (7283, new { action = "sell", rate = "0.000001" })
             );
 
-            // await SendTxAsync(
-            //     _walletAddressString,
-            //     200000000,
-            //     null,
-            //     (7283, new { action = "buy" })
-            // );
-
-            // await SendTxAsync(
-            //     _walletAddressString,
-            //     2000000,
-            //     ("88672eaaf6f5c5fb59ffa5b978016207dbbf769014c6870d31adc4de", "484f534b59", 100),
-            //     (7283, new { action = "sell" })
-            // );
+            await SendTxAsync(
+                _walletAddressString,
+                1500000 + 694200,
+                (_assetPolicyId, _assetName, 100),
+                (7283, new { action = "sell", rate = "0.000003" })
+            );
         }).ConfigureAwait(false).GetAwaiter().GetResult();
 
     }
@@ -93,17 +95,47 @@ public class Worker : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            if (_blockfrostEpochService is not null)
+            try
             {
-                var networkParams = await _blockfrostEpochService.GetLatestParametersAsync(stoppingToken);
+                if (_blockfrostEpochService is not null)
+                {
+                    var networkParams = await _blockfrostEpochService.GetLatestParametersAsync(stoppingToken);
+                    _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
+                    await SyncNewOrdersAsync(stoppingToken);
+                    await Task.Delay(20000, stoppingToken);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in Worker");
+            }
+        }
+    }
 
-                _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-                _logger.LogInformation($"Blockfrost API Key {_blockfrostAPIKey}", DateTimeOffset.Now);
-                _logger.LogInformation($"Blockfrost API Network {_blockfrostAPINetwork}", DateTimeOffset.Now);
-                _logger.LogInformation($"Blockfrost Protocol Params {JsonSerializer.Serialize(networkParams)}", DateTimeOffset.Now);
-                _logger.LogInformation($"Wallet Seed {_walletSeed}", DateTimeOffset.Now);
-                _logger.LogInformation($"Wallet Address {_walletAddressString}", DateTimeOffset.Now);
-                await Task.Delay(20000, stoppingToken);
+    private async Task SyncNewOrdersAsync(CancellationToken stoppingToken)
+    {
+        if (_blockfrostAddressService is not null && _dbContext.Orders is not null && _blockfrostTransactionsService is not null)
+        {
+            var utxos = await GetWalletUTXOAsync();
+            foreach (var utxo in utxos)
+            {
+                if (!_dbContext.Orders.Where(o => o.TxHash == utxo.TxHash && o.TxIndex == utxo.TxIndex).Any())
+                {
+                    var meta = await _blockfrostTransactionsService.GetMetadataAsync(utxo.TxHash, stoppingToken);
+                    var hoskyMeta = meta.Where(m => m.Label == "7283").FirstOrDefault();
+                    if (hoskyMeta is not null)
+                    {
+                        var action = hoskyMeta.JsonMetadata.GetProperty("action").GetString();
+                        var rate = double.Parse(hoskyMeta.JsonMetadata.GetProperty("rate").GetString() ?? throw new Exception("Rate is null"));
+                        
+                        switch (action)
+                        {
+                            case "action":
+                                
+                                break;
+                        }
+                    }
+                }
             }
         }
     }
