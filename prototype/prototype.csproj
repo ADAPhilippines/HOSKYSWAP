@@ -15,20 +15,4 @@
     <Folder Include="wwwroot\dist" />
   </ItemGroup>
 
-  <ItemGroup>
-    <TypeScriptCompile Include="wwwroot\scripts\app\App.ts" />
-    <TypeScriptCompile Include="wwwroot\scripts\app\CardanoWalletInterop.ts" />
-    <TypeScriptCompile Include="wwwroot\scripts\app\Enums\CardanoWalletInteropErrorType.ts" />
-    <TypeScriptCompile Include="wwwroot\scripts\app\global.d.ts" />
-    <TypeScriptCompile Include="wwwroot\scripts\app\Helpers\CardanoWasmLoader.ts" />
-    <TypeScriptCompile Include="wwwroot\scripts\app\Helpers\Helper.ts" />
-    <TypeScriptCompile Include="wwwroot\scripts\app\Interfaces\IDotNetObjectRef.ts" />
-    <TypeScriptCompile Include="wwwroot\scripts\app\Types\Asset.ts" />
-    <TypeScriptCompile Include="wwwroot\scripts\app\Types\Block.ts" />
-    <TypeScriptCompile Include="wwwroot\scripts\app\Types\CardanoWalletInteropError.ts" />
-    <TypeScriptCompile Include="wwwroot\scripts\app\Types\Paginate.ts" />
-    <TypeScriptCompile Include="wwwroot\scripts\app\Types\ProtocolParameters.ts" />
-    <TypeScriptCompile Include="wwwroot\scripts\app\Types\TxOutput.ts" />
-  </ItemGroup>
-
 </Project>
