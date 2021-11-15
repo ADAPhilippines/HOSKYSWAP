@@ -4,6 +4,10 @@
     <ProjectReference Include="..\HOSKYSWAP.Common\HOSKYSWAP.Common.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Blockfrost.Api" Version="1.0.0" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>

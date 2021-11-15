@@ -2,15 +2,17 @@ import CardanoWasmLoader from "./Helpers/CardanoWasmLoader";
 import IDotNetObjectRef from "./Interfaces/IDotNetObjectRef";
 import CardanoWalletInteropErrorType from "./Enums/CardanoWalletInteropErrorType";
 import CardanoWalletInteropError from "./Types/CardanoWalletInteropError";
-import {Transaction, TransactionUnspentOutput} from "@emurgo/cardano-serialization-lib-browser";
+import {BigNum, Transaction, TransactionUnspentOutput} from "@emurgo/cardano-serialization-lib-browser";
 import {Buffer} from "Buffer";
 import Helper from "./Helpers/Helper";
 import TxOutput from "./Types/TxOutput";
+import ProtocolParameters from "./Types/ProtocolParameters";
+import Block from "./Types/Block";
 
 class CardanoWalletInterop {
     private objectRef: IDotNetObjectRef | null = null;
     private errorCallbackName: string = "OnError";
-    private backendUrl: string = "";
+    private hoskySwapServerUrl: string = "http://localhost:5120";
 
     public async IsWalletConnectedAsync(): Promise<boolean | null> {
         if (window.cardano) {
@@ -53,35 +55,15 @@ class CardanoWalletInterop {
         utxos.forEach(utxo => {
             totalValue = totalValue.checked_add(utxo.output().amount());
         });
-        
-        if(unit === "lovelace")
-        {
+
+        if (unit === "lovelace") {
             return totalValue.coin().to_str();
-        }
-        else
-        {
-            let asset_bal = BigInt(0);
-            const multiAssets = totalValue.multiasset()?.keys();
-            if (multiAssets) {
-                for (let j = 0; j < multiAssets.len(); j++) {
-                    const policy = multiAssets.get(j);
-                    const policyAssets = totalValue.multiasset()?.get(policy);
-                    const assetNames = policyAssets?.keys();
-                    if (assetNames && policyAssets)
-                        for (let k = 0; k < assetNames.len(); k++) {
-                            const policyAsset = assetNames.get(k);
-                            const quantity = policyAssets.get(policyAsset);
-                            const asset =
-                                Buffer.from(policy.to_bytes()).toString('hex') +
-                                Buffer.from(policyAsset.name()).toString('hex');
-                            if (asset == unit) {
-                                if (quantity?.to_str())
-                                    asset_bal += BigInt(quantity.to_str());
-                            }
-                        }
-                }
-            }
-            return asset_bal.toString();
+        } else {
+            const scriptHash = CardanoWasmLoader.Cardano.ScriptHash.from_bytes(Helper.HexToBytes(unit.slice(0, 56)));
+            const assetNameHash = CardanoWasmLoader.Cardano.AssetName.new(Helper.HexToBytes(unit.slice(56)));
+            const policyAssets = totalValue.multiasset()?.get(scriptHash);
+            const assetQuantity = policyAssets?.get(assetNameHash);
+            return assetQuantity?.to_str() ?? "0";
         }
     }
 
@@ -91,14 +73,14 @@ class CardanoWalletInterop {
         }
     }
 
-    public async SendAdaAsync(outputs: TxOutput[]): Promise<string | null> {
+    public async SendAssetsAsync(output: TxOutput): Promise<string | null> {
         let result: string | null = null;
-        const transaction = await this.CreateNormalTx(outputs);
+        const transaction = await this.CreateNormalTx(output);
         if (transaction !== null) {
-            //const signedTx = await this.signTxAsync(transaction);
-            //if (signedTx != null) {
+            const signedTx = await this.signTxAsync(transaction);
+            if (signedTx != null) {
                 //result = await this.SubmitTxAsync(signedTx);
-            //}
+            }
         }
         return result;
     }
@@ -164,10 +146,9 @@ class CardanoWalletInterop {
         return result;
     }
 
-    private async CreateNormalTx(outputs: TxOutput[]): Promise<Transaction | null> {
+    private async CreateNormalTx(output: TxOutput): Promise<Transaction | null> {
         try {
-            const latestBlock = await this.GetLatestBlockAsync();
-            let protocolParams = await this.GetProtocolParametersAsync(latestBlock.epoch);
+            let protocolParams = await this.GetProtocolParametersAsync();
 
             const txBuilder = CardanoWasmLoader.Cardano.TransactionBuilder.new(
                 CardanoWasmLoader.Cardano.LinearFee.new(
@@ -176,26 +157,55 @@ class CardanoWalletInterop {
                 CardanoWasmLoader.Cardano.BigNum.from_str(protocolParams.min_utxo.toString()),
                 CardanoWasmLoader.Cardano.BigNum.from_str(protocolParams.pool_deposit.toString()),
                 CardanoWasmLoader.Cardano.BigNum.from_str(protocolParams.key_deposit.toString()),
-                0,
-                0);
+                parseInt(protocolParams.max_val_size),
+                protocolParams.max_tx_size);
 
-            const utxos = await CardanoWalletInterop.SelectUtxosAsync(4000000);
+            const utxos = await CardanoWalletInterop.SelectUtxosAsync(output);
             utxos.forEach(utxo => {
                 txBuilder.add_input(
                     utxo.output().address(),
                     utxo.input(),
                     utxo.output().amount());
             });
+            
+            const lovelaceAsset = output.amount.find((asset) => asset.unit === 'lovelace');
+            const lovelaceQuantity = lovelaceAsset?.quantity ?? 0;
+            
+            const outputValue = CardanoWasmLoader.Cardano.Value.new(
+                CardanoWasmLoader.Cardano.BigNum.from_str(lovelaceQuantity.toString())
+            );
+            
+            //Current implementation only supports 1 type of token
+            if(output.amount.length > 1)
+            {
+                const multiAsset = CardanoWasmLoader.Cardano.MultiAsset.new();
+                var asset = output.amount.find(asset => asset.unit !== 'lovelace');
+                if(asset)
+                {
 
-            outputs.forEach((output) => {
-                txBuilder.add_output(
-                    CardanoWasmLoader.Cardano.TransactionOutput.new(
-                        CardanoWasmLoader.Cardano.Address.from_bech32(output.address),
-                        CardanoWasmLoader.Cardano.Value.new(CardanoWasmLoader.Cardano.BigNum.from_str(output.amount.toString()))
-                    )
-                );
-            });
+                    const assetsValue = CardanoWasmLoader.Cardano.Assets.new();
+                    assetsValue.insert(
+                        CardanoWasmLoader.Cardano.AssetName.new(Buffer.from(asset.unit.slice(56), 'hex')),
+                        CardanoWasmLoader.Cardano.BigNum.from_str(asset.quantity.toString())
+                    );
 
+                    multiAsset.insert(
+                        CardanoWasmLoader.Cardano.ScriptHash.from_bytes(Buffer.from(asset.unit.slice(0,56), 'hex')),
+                        assetsValue
+                    );
+                }
+                
+                outputValue.set_multiasset(multiAsset);
+            }
+            
+            txBuilder.add_output(
+                CardanoWasmLoader.Cardano.TransactionOutput.new(
+                    CardanoWasmLoader.Cardano.Address.from_bech32(output.address),
+                    CardanoWasmLoader.Cardano.Value.new(CardanoWasmLoader.Cardano.BigNum.from_str(output.amount[0].quantity.toString()))
+                )
+            );
+
+            const latestBlock = await this.GetLatestBlockAsync();
             txBuilder.set_ttl(latestBlock.slot + 1000);
 
             const addressHex = (await window.cardano.getUsedAddresses())[0];
@@ -226,42 +236,75 @@ class CardanoWalletInterop {
         }
     }
 
-    private static async SelectUtxosAsync(amount: number): Promise<TransactionUnspentOutput[]> {
+    private static async SelectUtxosAsync(txOutput: TxOutput): Promise<TransactionUnspentOutput[]> {
         const utxosHex = await window.cardano.getUtxos();
-        const utxos
-            :
-            TransactionUnspentOutput[] = utxosHex
+        const utxos: TransactionUnspentOutput[] = utxosHex
             .map(utxo => CardanoWasmLoader.Cardano.TransactionUnspentOutput.from_bytes(Buffer.from(utxo, "hex")));
 
-        const sortedUtxos = utxos.sort((a, b) => {
-            const aAssetLen = a.output().amount().multiasset()?.len() ?? 0;
-            const bAssetLen = b.output().amount().multiasset()?.len() ?? 0;
-            if (aAssetLen > bAssetLen)
-                return 1;
-            else if (aAssetLen < bAssetLen)
-                return -1;
-            else
-                return 0;
-        });
-
         const selectedUtxos: TransactionUnspentOutput[] = [];
-        for (let i in sortedUtxos) {
-            selectedUtxos.push(sortedUtxos[i]);
-            let sum = selectedUtxos
-                .map(utxo => parseInt(utxo.output().amount().coin().to_str()))
-                .reduce((p, n) => p + n);
+        if (txOutput.amount.length == 1 && txOutput.amount[0].unit == "lovelace") {
+            const sortedUtxos = utxos.sort((a, b) => {
+                const aAssetLen = a.output().amount().multiasset()?.len() ?? 0;
+                const bAssetLen = b.output().amount().multiasset()?.len() ?? 0;
+                if (aAssetLen > bAssetLen)
+                    return 1;
+                else if (aAssetLen < bAssetLen)
+                    return -1;
+                else
+                    return 0;
+            });
 
-            if (sum >= amount) break;
+            for (let i in sortedUtxos) {
+                selectedUtxos.push(sortedUtxos[i]);
+                let sum = selectedUtxos
+                    .map(utxo => parseInt(utxo.output().amount().coin().to_str()))
+                    .reduce((p, n) => p + n);
+
+                if (sum >= txOutput.amount[0].quantity) break;
+            }
+        } else if (txOutput.amount.length > 1) {
+            const asset = txOutput.amount.find(asset => asset.unit != "lovelace");
+            if (asset) {
+                const scriptHash = CardanoWasmLoader.Cardano.ScriptHash.from_bytes(Helper.HexToBytes(asset.unit.slice(0, 56)));
+                const assetNameHash = CardanoWasmLoader.Cardano.AssetName.new(Helper.HexToBytes(asset.unit.slice(56)));
+
+                const sortedUtxos = utxos.sort((a, b) => {
+                    const aPolicyAssets = a.output().amount().multiasset()?.get(scriptHash);
+                    const aAssetQuantity = aPolicyAssets?.get(assetNameHash) ?? BigNum.from_str("0");
+
+                    const bPolicyAssets = a.output().amount().multiasset()?.get(scriptHash);
+                    const bAssetQuantity = bPolicyAssets?.get(assetNameHash) ?? BigNum.from_str("0");
+
+                    if (aAssetQuantity > bAssetQuantity)
+                        return 1;
+                    else if (aAssetQuantity < bAssetQuantity)
+                        return -1;
+                    else
+                        return 0;
+                });
+
+                for (let i in sortedUtxos) {
+                    selectedUtxos.push(sortedUtxos[i]);
+                    let sum = selectedUtxos
+                        .map(utxo => {
+                            const policyAssets = utxo.output().amount().multiasset()?.get(scriptHash);
+                            return policyAssets?.get(assetNameHash) ?? BigNum.from_str("0");
+                        })
+                        .reduce((p, n) => p.checked_add(n));
+
+                    if (sum >= BigNum.from_str(asset.quantity.toString())) break;
+                }
+            }
         }
 
         return selectedUtxos;
     }
 
-    private async GetProtocolParametersAsync(epoch: number): Promise<ProtocolParameters> {
+    private async GetProtocolParametersAsync(): Promise<ProtocolParameters> {
         let protocolParameters: ProtocolParameters | null;
 
         while (true) {
-            protocolParameters = await this.GetFromBlockfrostAsync<ProtocolParameters>(`epochs/${epoch}/parameters`);
+            protocolParameters = await this.FetchDataAsync<ProtocolParameters>(`parameters`);
             if (protocolParameters !== null) {
                 break;
             } else {
@@ -269,6 +312,29 @@ class CardanoWalletInterop {
             }
         }
         return protocolParameters;
+    }
+
+    private async GetLatestBlockAsync(): Promise<Block> {
+        let latestBlock: Block | null;
+        while (true) {
+            latestBlock = await this.FetchDataAsync<Block>("blocks/latest");
+            if (latestBlock !== null) {
+                break;
+            } else {
+                await Helper.Delay(1000);
+            }
+        }
+        return latestBlock;
+    }
+
+    private async FetchDataAsync<T>(endpoint: string): Promise<T | null> {
+        const response = await fetch(`${this.hoskySwapServerUrl}/${endpoint}`);
+        const responseBody = await response.json();
+        if (responseBody.error) {
+            return null;
+        } else {
+            return responseBody;
+        }
     }
 
     private async ThrowErrorAsync(e: CardanoWalletInteropError): Promise<void> {

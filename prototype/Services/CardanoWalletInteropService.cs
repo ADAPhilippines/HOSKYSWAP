@@ -41,6 +41,13 @@ public class CardanoWalletInteropService
         await _jsRuntime.InvokeVoidAsync("CardanoWalletInterop.SetErrorHandlerCallback", objRef, "OnError");
         IsErrorHandlerSet = true;
     }
+    
+    public async ValueTask<string?> SendAssetsAsync(TxOutput output)
+    {
+        if (_jsRuntime is null) return null;
+        await EnsureErrorHandlerIsSet();
+        return await _jsRuntime.InvokeAsync<string?>("CardanoWalletInterop.SendAssetsAsync", output);
+    }
 
     private async ValueTask EnsureErrorHandlerIsSet()
     {

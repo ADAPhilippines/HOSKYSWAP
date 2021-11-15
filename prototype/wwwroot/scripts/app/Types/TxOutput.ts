@@ -1,6 +1,8 @@
-type TxOutput= {
+import Asset from "./Asset";
+
+type TxOutput = {
     address: string;
-    amount: number;
+    amount: Asset[];
 }
 
 export default TxOutput;
