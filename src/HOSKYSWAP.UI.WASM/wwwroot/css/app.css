@@ -1,30 +1,77 @@
 ﻿@tailwind base;
 @tailwind components;
 @tailwind utilities;
-html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+@layer base {
+    html, body {
+       @apply font-poppins text-white;
+    }
 }
 
-h1:focus {
-    outline: none;
-}
+@layer components {
+    .hsky-textfield input, .hsky-select input, .mud-input-adornment, .mud-input-adornment svg, .mud-input-slot span {
+        @apply text-white !important;
+    }
 
-a, .btn-link {
-    color: #0071c1;
+    .hsky-textfield .mud-input-outlined-border, .hsky-select .mud-input-outlined-border {
+        @apply border-white !important;
+    }
+
+    .mud-input-label {
+        @apply text-white bg-transparent !important;
+    }
+
+    .mud-select-input {
+        @apply p-2 !important;
+    }
+
+    .mud-input input {
+        @apply p-3 !important;
+    }
+
+    .mud-input-slot, .mud-select .mud-input {
+        @apply p-0  !important;
+    }
+
+    .hsky-select .mud-input {
+        @apply h-[43px] font-semibold !important;
+    }
+
+    .hsky-select img, .hsky-select-item-image {
+        @apply h-[43px] w-[26px] object-contain object-left mx-2 inline !important;
+    }
+
+    .hsky-select .mud-input-slot, .hsky-select .mud-input-adornment {
+        @apply p-0 !important;
+    }
+
+    .hsky-select .mud-select-input {
+        @apply h-[43px] !important;
+    }
+
+    .hsky-select .mud-input-adornment {
+        @apply mr-1 !important;
+
+    }
+
+    .hsky-textfield .mud-input input {
+        @apply font-semibold;
+    }
+    
+    .mud-input-adornment p{
+        @apply font-semibold;
+    }
+    
+  
+    .selected-order{
+        @apply brightness-125 bg-selected-row-color !important;
+    }
 }
 
 .btn-primary {
     color: #fff;
     background-color: #1b6ec2;
     border-color: #1861ac;
-}
-
-.content {
-    padding-top: 1.1rem;
-}
-
-.valid.modified:not([type=checkbox]) {
-    outline: 1px solid #26b050;
 }
 
 .invalid {
@@ -60,6 +107,101 @@ a, .btn-link {
     color: white;
 }
 
-    .blazor-error-boundary::after {
-        content: "An error has occurred."
+.blazor-error-boundary::after {
+    content: "An error has occurred."
+}
+
+
+
+.blurred-circle-one {
+    /* Yellow */
+    position: absolute;
+    top: 70%;
+    left: 50%;
+    width: 50rem;
+    height: 50rem;
+    background: radial-gradient(#cfb50c, transparent, transparent);
+    filter: blur(20px);
+}
+
+.blurred-circle-two {
+    /* Skyblue */
+    position: absolute;
+    top: 1%;
+    left: 1%;
+    width: 50rem;
+    height: 50rem;
+    background: radial-gradient(#0c8ecf, transparent, transparent);
+    filter: blur(20px);
+}
+
+.blurred-circle-three {
+    /* Flesh */
+    position: absolute;
+    top: 50%;
+    left: 19%;
+    width: 60rem;
+    height: 60rem;
+    opacity: 0.5;
+    background: radial-gradient(rgb(248 185 147), transparent, transparent);
+    filter: blur(20px);
+}
+
+.blurred-circle-four {
+    /* Violet */
+    position: absolute;
+    top: 1%;
+    left: 64%;
+    width: 50rem;
+    height: 50rem;
+    background: radial-gradient(rgb(89 12 207 / 60%), transparent, transparent);
+    filter: blur(20px);
+}
+
+.blurred-circle-five {
+    /* Red */
+    position: absolute;
+    top: 71%;
+    left: 92%;
+    width: 70rem;
+    height: 70rem;
+    background: radial-gradient(#cf0c64a6, transparent, transparent);
+    filter: blur(20px);
+}
+
+.blurred-circle-six {
+    /* Orange */
+    position: absolute;
+    top: 96%;
+    left: 1%;
+    width: 50rem;
+    height: 50rem;
+    background: radial-gradient(#cf5f0ca8, transparent, transparent);
+    filter: blur(20px);
+}
+.first-motion {
+    offset-path: path('M20,20 C20,100 200,0 200,100');
+    animation: move 25000ms infinite alternate ease-in-out;
+    will-change: transform;
+}
+
+.second-motion {
+    offset-path: path('M-70,-40 C-70,70 70,70 70,-40');
+    animation: move 25000ms infinite alternate ease-in-out;
+    will-change: transform;
+}
+
+.third-motion {
+    offset-path: path("M18.45,58.46s52.87-70.07,101.25-.75,101.75-6.23,101.75-6.23S246.38,5.59,165.33,9.08s-15,71.57-94.51,74.56S18.45,58.46,18.45,58.46Z");
+    animation: move 25000ms infinite alternate ease-in-out;
+    will-change: transform;
+}
+
+@keyframes move {
+    0% {
+        offset-distance: 0%;
     }
+    100% {
+        offset-distance: 100%;
+    }
+}

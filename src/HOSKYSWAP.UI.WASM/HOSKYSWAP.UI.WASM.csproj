@@ -26,6 +26,10 @@
     <_ContentIncludedByDefault Remove="wwwroot\css\open-iconic\font\fonts\open-iconic.woff" />
     <_ContentIncludedByDefault Remove="wwwroot\css\open-iconic\ICON-LICENSE" />
     <_ContentIncludedByDefault Remove="wwwroot\css\open-iconic\README.md" />
+    <_ContentIncludedByDefault Remove="wwwroot\dist\images\cardano-ada-logo.svg" />
+    <_ContentIncludedByDefault Remove="wwwroot\dist\images\cardano_logo_dark.svg" />
+    <_ContentIncludedByDefault Remove="wwwroot\dist\images\cardano_logo_white.svg" />
+    <_ContentIncludedByDefault Remove="wwwroot\dist\images\hosky.webp" />
   </ItemGroup>
 
 </Project>
