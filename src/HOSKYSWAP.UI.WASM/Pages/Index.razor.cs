@@ -163,10 +163,13 @@ public partial class IndexBase : ComponentBase
 
     protected async void OnCloseDialog(MouseEventArgs args)
     {
+        await Task.Delay(200);
         IsDialogVisible = false;
         if (LocalStorage != null)
         {
             await LocalStorage.SetItemAsync(DidReadDialogStorageKey, true);
         }
+
+        await InvokeAsync(StateHasChanged);
     }
 }
