@@ -33,7 +33,12 @@
             <div class="text-white font-semibold"><span class="text-currency">$100,000</span> MARKETCAP</div>
             @if (IsWalletConnected)
             {
-                <div class="text-white font-semibold">@FormatAddress()</div>
+                <div class="flex flex-row items-center">
+                    <div class="h-[3rem] w-[3rem] inline mr-[10px] bg-white rounded-full items-center justify-center flex">
+                        <img class="h-3/4" alt="" src="@UserIdenticon"/>
+                    </div>
+                    <div class="text-white font-semibold">@FormatAddress()</div>
+                </div>
             }
             else
             {
