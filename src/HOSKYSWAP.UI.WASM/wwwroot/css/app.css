@@ -79,6 +79,13 @@
     .mud-tooltip-inline {
         @apply w-full;
     }
+    .mud-dialog {
+        @apply bg-dark-color text-white;
+    }
+    
+    .mud-dialog .mud-dialog-actions {
+        @apply justify-center;
+    }
 }
 
 .btn-primary {

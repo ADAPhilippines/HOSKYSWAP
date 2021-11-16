@@ -707,6 +707,16 @@ html, body {
   width: 100%;
 }
 
+.mud-dialog {
+  background-color: rgba(46,57,73);
+  --tw-text-opacity: 1;
+  color: rgba(255, 255, 255, var(--tw-text-opacity));
+}
+
+.mud-dialog .mud-dialog-actions {
+  justify-content: center;
+}
+
 .fixed {
   position: fixed !important;
 }
@@ -768,8 +778,24 @@ html, body {
   margin-top: -1.5rem !important;
 }
 
+.mb-28 {
+  margin-bottom: 7rem !important;
+}
+
+.mb-\[53px\] {
+  margin-bottom: 53px !important;
+}
+
 .ml-4 {
   margin-left: 1rem !important;
+}
+
+.mr-3 {
+  margin-right: 0.75rem !important;
+}
+
+.ml-\[24px\] {
+  margin-left: 24px !important;
 }
 
 .mb-0 {
@@ -804,8 +830,16 @@ html, body {
   display: grid !important;
 }
 
-.h-\[500px\] {
-  height: 500px !important;
+.hidden {
+  display: none !important;
+}
+
+.h-\[504px\] {
+  height: 504px !important;
+}
+
+.h-\[100px\] {
+  height: 100px !important;
 }
 
 .h-2 {
@@ -836,32 +870,12 @@ html, body {
   height: 5rem !important;
 }
 
-.h-\[200px\] {
-  height: 200px !important;
-}
-
-.h-\[100px\] {
-  height: 100px !important;
-}
-
-.max-h-\[430px\] {
-  max-height: 430px !important;
+.max-h-\[450px\] {
+  max-height: 450px !important;
 }
 
 .max-h-\[300px\] {
   max-height: 300px !important;
-}
-
-.max-h-\[425px\] {
-  max-height: 425px !important;
-}
-
-.max-h-\[435px\] {
-  max-height: 435px !important;
-}
-
-.max-h-\[450px\] {
-  max-height: 450px !important;
 }
 
 .w-full {
@@ -874,6 +888,10 @@ html, body {
 
 .w-\[125px\] {
   width: 125px !important;
+}
+
+.w-\[100px\] {
+  width: 100px !important;
 }
 
 .w-1\/2 {
@@ -896,12 +914,8 @@ html, body {
   width: 3rem !important;
 }
 
-.w-\[200px\] {
-  width: 200px !important;
-}
-
-.w-\[100px\] {
-  width: 100px !important;
+.w-\[320px\] {
+  width: 320px !important;
 }
 
 .max-w-base-content {
@@ -933,12 +947,49 @@ html, body {
           animation: spin 1s linear infinite !important;
 }
 
+@-webkit-keyframes bounce {
+  0%, 100% {
+    transform: translateY(-25%);
+    -webkit-animation-timing-function: cubic-bezier(0.8,0,1,1);
+            animation-timing-function: cubic-bezier(0.8,0,1,1);
+  }
+
+  50% {
+    transform: none;
+    -webkit-animation-timing-function: cubic-bezier(0,0,0.2,1);
+            animation-timing-function: cubic-bezier(0,0,0.2,1);
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(-25%);
+    -webkit-animation-timing-function: cubic-bezier(0.8,0,1,1);
+            animation-timing-function: cubic-bezier(0.8,0,1,1);
+  }
+
+  50% {
+    transform: none;
+    -webkit-animation-timing-function: cubic-bezier(0,0,0.2,1);
+            animation-timing-function: cubic-bezier(0,0,0.2,1);
+  }
+}
+
+.animate-bounce {
+  -webkit-animation: bounce 1s infinite !important;
+          animation: bounce 1s infinite !important;
+}
+
 .cursor-pointer {
   cursor: pointer !important;
 }
 
 .cursor-default {
   cursor: default !important;
+}
+
+.list-disc {
+  list-style-type: disc !important;
 }
 
 .grid-cols-2 {
@@ -959,6 +1010,10 @@ html, body {
 
 .justify-start {
   justify-content: flex-start !important;
+}
+
+.justify-end {
+  justify-content: flex-end !important;
 }
 
 .justify-center {
@@ -985,9 +1040,9 @@ html, body {
   row-gap: 0.5rem !important;
 }
 
-.gap-x-3 {
-  -moz-column-gap: 0.75rem !important;
-       column-gap: 0.75rem !important;
+.gap-x-8 {
+  -moz-column-gap: 2rem !important;
+       column-gap: 2rem !important;
 }
 
 .divide-x > :not([hidden]) ~ :not([hidden]) {
@@ -1081,9 +1136,23 @@ html, body {
   padding: 0.5rem !important;
 }
 
+.p-8 {
+  padding: 2rem !important;
+}
+
+.px-4 {
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+}
+
 .py-1 {
   padding-top: 0.25rem !important;
   padding-bottom: 0.25rem !important;
+}
+
+.px-10 {
+  padding-left: 2.5rem !important;
+  padding-right: 2.5rem !important;
 }
 
 .pb-4 {
@@ -1094,8 +1163,12 @@ html, body {
   padding-top: 4px !important;
 }
 
-.pb-1 {
-  padding-bottom: 0.25rem !important;
+.pt-4 {
+  padding-top: 1rem !important;
+}
+
+.pb-\[4px\] {
+  padding-bottom: 4px !important;
 }
 
 .pb-2 {
@@ -1116,10 +1189,6 @@ html, body {
 
 .pt-\[6px\] {
   padding-top: 6px !important;
-}
-
-.pb-0 {
-  padding-bottom: 0px !important;
 }
 
 .text-left {
@@ -1165,6 +1234,10 @@ html, body {
 
 .font-extralight {
   font-weight: 200 !important;
+}
+
+.uppercase {
+  text-transform: uppercase !important;
 }
 
 .normal-case {
@@ -1414,5 +1487,17 @@ html, body {
 
   .lg\:mt-0 {
     margin-top: 0px !important;
+  }
+
+  .lg\:block {
+    display: block !important;
+  }
+
+  .lg\:flex {
+    display: flex !important;
+  }
+
+  .lg\:hidden {
+    display: none !important;
   }
 }
