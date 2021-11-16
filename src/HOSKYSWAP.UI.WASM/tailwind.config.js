@@ -9,7 +9,7 @@ module.exports = {
       '../**/*.html',
       '../**/*.cshtml',
     ],
-    safelist: ['mud-input-label', 'mud-select-input', 'mud-input', 'mud-input-slot' , 'mud-select', 'hsky-select-item', 'hsky-select', 'hsky-textfield', 'mud-input-adornment'], // put dynamic class here
+    safelist: ['mud-input-label', 'mud-select-input', 'mud-input', 'mud-input-slot' , 'mud-select', 'hsky-select-item', 'hsky-select', 'hsky-textfield', 'mud-input-adornment','mud-tabs-toolbar', 'mud-tooltip-root', 'mud-tabs-toolbar-wrapper', 'mud-tooltip-inline'], // put dynamic class here
   },
   darkMode: 'class', // or 'media' or 'class'
   mode: 'jit',
