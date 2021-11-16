@@ -1084,10 +1084,6 @@ html, body {
   border-radius: 9999px !important;
 }
 
-.rounded {
-  border-radius: 0.25rem !important;
-}
-
 .bg-transparent-dark {
   background-color: rgba(46,57,73,0.6) !important;
 }
@@ -1291,6 +1287,11 @@ html, body {
   color: rgba(239, 68, 68, var(--tw-text-opacity)) !important;
 }
 
+.text-aph-darkblue {
+  --tw-text-opacity: 1 !important;
+  color: rgba(18, 25, 33, var(--tw-text-opacity)) !important;
+}
+
 .opacity-50 {
   opacity: 0.5 !important;
 }
@@ -1485,6 +1486,11 @@ html, body {
 .hover\:brightness-125:hover {
   --tw-brightness: brightness(1.25) !important;
   filter: var(--tw-filter) !important;
+}
+
+.dark .dark\:text-white {
+  --tw-text-opacity: 1 !important;
+  color: rgba(255, 255, 255, var(--tw-text-opacity)) !important;
 }
 
 @media (min-width: 768px) {

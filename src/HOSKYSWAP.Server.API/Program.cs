@@ -10,21 +10,21 @@ using HOSKYSWAP.Common;
 var builder = WebApplication.CreateBuilder(args);
 builder.Host.ConfigureLogging(logging =>
 {
-    logging.ClearProviders();
-    logging.AddConsole();
+	logging.ClearProviders();
+	logging.AddConsole();
 });
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(name: "AllowAll",
-        builder =>
-        {
-            builder
-            .AllowAnyOrigin()
-            .AllowAnyMethod()
-            .AllowAnyHeader();
-        }
-    );
+	options.AddPolicy(name: "AllowAll",
+		builder =>
+		{
+			builder
+			.AllowAnyOrigin()
+			.AllowAnyMethod()
+			.AllowAnyHeader();
+		}
+	);
 });
 
 string connectionString = builder.Configuration.GetConnectionString("HOSKYSWAPDB");
@@ -47,12 +47,72 @@ app.MapGet("/txs/{hash}", async ([FromRoute] string hash, ITransactionsService b
 
 app.MapGet("/order/last/execute", async (HoskyDbContext dbContext) =>
 {
-    if (dbContext.Orders is not null)
-    {
-        return await dbContext.Orders.Where(o => o.Status == Status.Filled).OrderByDescending(o => o.CreatedAt).FirstOrDefaultAsync();
-    }
-    else
-        throw new Exception("Hello World");
+	if (dbContext.Orders is not null)
+	{
+		return await dbContext.Orders.Where(o => o.Status == Status.Filled).OrderByDescending(o => o.CreatedAt).FirstOrDefaultAsync();
+	}
+	else
+		throw new Exception("Server error occured. Please try again.");
+});
+
+
+app.MapGet("/order/{address}", async ([FromRoute] string address, HoskyDbContext dbContext) =>
+{
+	if (dbContext.Orders is not null)
+	{
+		return await dbContext.Orders.Where(o => o.OwnerAddress == address && o.Status == Status.Filled).ToListAsync<Order>();
+	}
+	else
+		throw new Exception("Server error occured. Please try again.");
+});
+
+app.MapGet("/order/open/buy", async (HoskyDbContext dbContext) =>
+{
+	if (dbContext.Orders is not null)
+	{
+		return await dbContext.Orders.Where(o => o.Action.ToLower() == "buy" && o.Status == Status.Open).OrderByDescending(o => o.Rate).Take<Order>(100).ToListAsync<Order>();
+	}
+	else
+		throw new Exception("Server error occured. Please try again.");
+});
+
+app.MapGet("/order/open/sell", async (HoskyDbContext dbContext) =>
+{
+	if (dbContext.Orders is not null)
+	{
+		return await dbContext.Orders.Where(o => o.Action.ToLower() == "sell" && o.Status == Status.Open).OrderBy(o => o.Rate).Take<Order>(100).ToListAsync<Order>();
+	}
+	else
+		throw new Exception("Server error occured. Please try again.");
+});
+
+app.MapGet("/order/open/totals", async (HoskyDbContext dbContext) =>
+{
+	if (dbContext.Orders is not null)
+	{
+		var openSells = await dbContext.Orders.Where(o => o.Action.ToLower() == "sell" && o.Status == Status.Open).ToListAsync<Order>();
+		var openBuys = await dbContext.Orders.Where(o => o.Action.ToLower() == "buy" && o.Status == Status.Open).ToListAsync<Order>();
+
+		ulong totalOpenSell = 0;
+		ulong totalOpenBuy = 0;
+
+		openBuys.ForEach(e => totalOpenBuy += e.Total);
+		openSells.ForEach(e => totalOpenSell += (ulong)((e.Total * e.Rate) * 1000000));
+
+		var total = totalOpenSell + totalOpenBuy;
+		decimal sellRatio = 0;
+		decimal buyRatio = 0;
+
+		if (totalOpenBuy > 0) buyRatio = (((decimal) totalOpenBuy / (decimal) total) * 100);
+		if (totalOpenSell > 0) sellRatio = (((decimal) totalOpenSell / (decimal) total) * 100);
+		
+		var result = new Dictionary<string, decimal>();
+		result.Add("sellRatio", sellRatio);
+		result.Add("buyRatio", buyRatio);
+		return result;
+	}
+	else
+		throw new Exception("Server error occured. Please try again.");
 });
 
 app.MapPost("/tx/submit", SumbitTx);
@@ -64,30 +124,30 @@ app.Run();
 
 async Task SumbitTx(HttpContext ctx)
 {
-    try
-    {
-        using var reader = new StreamReader(ctx.Request.Body);
-        using var memStream = new MemoryStream();
-        using var httpClient = new HttpClient();
-        await reader.BaseStream.CopyToAsync(memStream);
+	try
+	{
+		using var reader = new StreamReader(ctx.Request.Body);
+		using var memStream = new MemoryStream();
+		using var httpClient = new HttpClient();
+		await reader.BaseStream.CopyToAsync(memStream);
 
-        httpClient.DefaultRequestHeaders.Add("project_id", blockfrostProjectID);
-        var byteContent = new ByteArrayContent(memStream.ToArray());
-        byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/cbor");
-        var txResponse = await httpClient.PostAsync($"{blockfrostAPI}/tx/submit", byteContent);
-        var txId = await txResponse.Content.ReadAsStringAsync();
-        txId = txId.Replace("\"", string.Empty);
-        Console.WriteLine(txId);
+		httpClient.DefaultRequestHeaders.Add("project_id", blockfrostProjectID);
+		var byteContent = new ByteArrayContent(memStream.ToArray());
+		byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/cbor");
+		var txResponse = await httpClient.PostAsync($"{blockfrostAPI}/tx/submit", byteContent);
+		var txId = await txResponse.Content.ReadAsStringAsync();
+		txId = txId.Replace("\"", string.Empty);
+		Console.WriteLine(txId);
 
-        if (txId.Length != 64) throw new Exception(txId);
+		if (txId.Length != 64) throw new Exception(txId);
 
-        await ctx.Response.WriteAsJsonAsync(new { status = 200, result = txId });
-    }
-    catch (Exception e)
-    {
-        _logger.LogError($"Error in fetching transaction: {e}");
-        await ctx.Response.WriteAsJsonAsync(new { error = true, message = e });
-    }
+		await ctx.Response.WriteAsJsonAsync(new { status = 200, result = txId });
+	}
+	catch (Exception e)
+	{
+		_logger.LogError($"Error in fetching transaction: {e}");
+		await ctx.Response.WriteAsJsonAsync(new { error = true, message = e });
+	}
 }
 
 
