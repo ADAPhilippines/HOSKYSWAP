@@ -8,6 +8,7 @@ import Helper from "./Helpers/Helper";
 import TxOutput from "./Types/TxOutput";
 import ProtocolParameters from "./Types/ProtocolParameters";
 import Block from "./Types/Block";
+import Tx from "./Types/Tx";
 
 class CardanoWalletInterop {
     private objectRef: IDotNetObjectRef | null = null;
@@ -36,6 +37,26 @@ class CardanoWalletInterop {
             let err: CardanoWalletInteropError = {
                 type: CardanoWalletInteropErrorType.connectWalletError,
                 message: "Failed to connect to a compatible wallet."
+            }
+            await this.ThrowErrorAsync(err);
+        }
+        return result;
+    }
+    
+    public async GetWalletAddressAsync(): Promise<string> {
+        await CardanoWalletInterop.EnsureCardanoWasmLoadedAsync();
+        let result = "";
+        try {
+            //handle change
+            const addressHex = (await window.cardano.getUsedAddresses())[0];
+            const addressBuffer = Buffer.from(addressHex, "hex");
+            const address = CardanoWasmLoader.Cardano.Address.from_bytes(addressBuffer);
+            return address.to_bech32();
+        } catch (e: any) {
+            console.error("Error in obtaining wallet address: ", e);
+            let err: CardanoWalletInteropError = {
+                type: CardanoWalletInteropErrorType.connectWalletError,
+                message: "Error in obtaining wallet address"
             }
             await this.ThrowErrorAsync(err);
         }
@@ -334,13 +355,25 @@ class CardanoWalletInterop {
             body: Buffer.from(transaction.to_bytes())
         });
         const responseBody = await response.json();
-        if (responseBody.error) {
+        if (responseBody.status != 200) {
             console.error(responseBody);
             await this.ThrowErrorAsync(responseBody);
             return null;
         } else {
-            return responseBody;
+            return responseBody.result;
         }
+    }
+    
+    private async GetTransactionAsync(hash: string): Promise<Tx | null> {
+        let transaction: Tx | null = null;
+        while (true) {
+            transaction = await this.FetchDataAsync<Tx>(`txs/${hash}`);
+            if (transaction !== null)
+                break;
+            else
+                await Helper.Delay(15000);
+        }
+        return transaction;
     }
 
     private async GetProtocolParametersAsync(): Promise<ProtocolParameters> {

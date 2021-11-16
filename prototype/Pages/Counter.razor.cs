@@ -11,22 +11,26 @@ public partial class Counter
 
     private async void OnCounterBtnClicked()
     {
+        const string hosky = "88672eaaf6f5c5fb59ffa5b978016207dbbf769014c6870d31adc4de484f534b59";
+        const string swapAddress =
+            "addr_test1qph75avrwfstny4hall2ufw2q7w3znpy9qrn4tjve348vdf3sd5n2afpnvv9kuc7ga4gnrurvl99vdj4dk30u2wwjzcq8dhr45";
         if (CardanoWalletInteropService is null) return;
         
         if(!await CardanoWalletInteropService.IsWalletConnectedAsync())
             await CardanoWalletInteropService.ConnectWalletAsync();
-
+        
+        Console.WriteLine(await CardanoWalletInteropService.GetWalletAddressAsync());
         Console.WriteLine(await CardanoWalletInteropService.GetBalanceAsync());
-        Console.WriteLine(await CardanoWalletInteropService.GetBalanceAsync("a0028f350aaabe0545fdcb56b039bfb08e4bb4d8c4d7c3c7d481c235484f534b59"));
+        Console.WriteLine(await CardanoWalletInteropService.GetBalanceAsync(hosky));
 
-        await CardanoWalletInteropService.SendAssetsAsync(new TxOutput()
+        var txId = await CardanoWalletInteropService.SendAssetsAsync(new TxOutput()
         {
-            Address = "addr1qxr04lmt3m06pjf4w4xer9jrh54huql75usxla8temajs7jp77sg0d3zl7fg84na9lkrteqfuhvraxgrc2y83yz4me7s28rzae",
+            Address = swapAddress,
             Amount = new List<Asset>
             {
                 new Asset
                 {
-                    Unit = "a0028f350aaabe0545fdcb56b039bfb08e4bb4d8c4d7c3c7d481c235484f534b59",
+                    Unit = hosky,
                     Quantity = 10
                 },
                 new Asset
@@ -37,5 +41,8 @@ public partial class Counter
             }
         },
          JsonSerializer.Serialize(new {rate="0.0000001", action="sell"}));
+        
+        var tx = await CardanoWalletInteropService.GetTransactionAsync(txId);
+        Console.WriteLine(tx.Hash.ToString());
     }
 }
