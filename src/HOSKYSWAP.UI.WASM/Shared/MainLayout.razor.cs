@@ -9,6 +9,7 @@ public partial class MainLayout
     [Inject] private HelperInteropService? HelperInteropService { get; set; }
     private string WalletAddress { get; set; } = string.Empty;
     private bool IsWalletConnected { get; set; } = false;
+    private string UserIdenticon { get; set; } = string.Empty;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -32,6 +33,7 @@ public partial class MainLayout
         {
             IsWalletConnected = true;
             WalletAddress = await CardanoWalletInteropService.GetWalletAddressAsync() ?? String.Empty;
+            UserIdenticon = await GetIdenticonAsync();
             await InvokeAsync(StateHasChanged);
         }
     }
@@ -39,13 +41,15 @@ public partial class MainLayout
     private string FormatAddress()
     {
         return WalletAddress.Length > 10 ? 
-            $"{WalletAddress.Replace("_test",string.Empty).Substring(0,8)}...{WalletAddress[^5..]}"
+            $"{WalletAddress.Substring(0,4)}...{WalletAddress[^8..]}"
             : WalletAddress;
     }
 
     private async Task<string> GetIdenticonAsync()
     {
-        if(HelperInteropService is not null)
+        if (HelperInteropService is not null)
             return await HelperInteropService.GenerateIdenticonAsync(WalletAddress);
+        else
+            return string.Empty;
     }
 }
