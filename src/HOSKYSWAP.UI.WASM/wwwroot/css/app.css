@@ -62,9 +62,22 @@
         @apply font-semibold;
     }
     
-  
     .selected-order{
         @apply brightness-125 bg-selected-row-color !important;
+    }
+    
+    .mud-tabs-toolbar {
+        @apply bg-transparent;
+    }
+    
+    .mud-tooltip-root {
+        @apply w-1/2;
+    }
+    .mud-tabs-toolbar-wrapper {
+        @apply w-full !important;
+    }
+    .mud-tooltip-inline {
+        @apply w-full;
     }
 }
 
