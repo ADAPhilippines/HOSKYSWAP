@@ -8,6 +8,9 @@
 		},
 		{
 			"path": "cardanosharp-wallet/CardanoSharp.Wallet"
+		},
+		{
+			"path": "HOSKYSWAP.Data"
 		}
 	],
 	"settings": {}

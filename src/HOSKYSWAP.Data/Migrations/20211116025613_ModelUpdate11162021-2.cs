@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace HOSKYSWAP.Server.Worker.Migrations
+namespace HOSKYSWAP.Data.Migrations
 {
     public partial class ModelUpdate111620212 : Migration
     {

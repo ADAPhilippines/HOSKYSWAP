@@ -14,6 +14,8 @@ using CardanoSharp.Wallet.Extensions.Models.Transactions;
 using System.Net.Http.Headers;
 using Blockfrost.Api.Models;
 using Microsoft.EntityFrameworkCore;
+using HOSKYSWAP.Common;
+using HOSKYSWAP.Data;
 
 namespace HOSKYSWAP.Server.Worker;
 
@@ -25,6 +27,7 @@ public class Worker : BackgroundService
     private string _assetPolicyId { get; set; } = string.Empty;
     private string _assetName { get; set; } = string.Empty;
     private string _walletSeed { get; set; } = string.Empty;
+    private ulong _swapFee { get; set; } = 694200;
     private string _blockfrostAPIKey { get; set; } = string.Empty;
     private string _blockfrostAPINetwork { get; set; } = string.Empty;
     private ServiceProvider? _blockfrostServiceProvider { get; set; } = null;
@@ -46,6 +49,7 @@ public class Worker : BackgroundService
         _assetPolicyId = _config["AssetPolicyId"];
         _assetName = _config["AssetName"];
         _walletSeed = _config["WalletSeed"];
+        _swapFee = ulong.Parse(_config["SwapFee"]);
         _blockfrostAPIKey = _config["BlockfrostAPIKey"];
         _blockfrostAPINetwork = _config["BlockfrostAPINetwork"];
         _blockfrostServiceProvider = new ServiceCollection().AddBlockfrost(_blockfrostAPINetwork, _blockfrostAPIKey).BuildServiceProvider();
@@ -103,6 +107,7 @@ public class Worker : BackgroundService
                     var networkParams = await _blockfrostEpochService.GetLatestParametersAsync(stoppingToken);
                     _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
                     await SyncNewOrdersAsync(stoppingToken);
+                    await MatchOrdersAsync();
                     await Task.Delay(20000, stoppingToken);
                 }
             }
@@ -186,20 +191,37 @@ public class Worker : BackgroundService
                                     .Select(e => ulong.Parse(e.Amount.Where(a => a.Unit == "lovelace").First().Quantity))
                                     .ToList().ForEach(e => totalLovelaceQuantity += e);
 
-                                if (action == "buy" && totalQuantity < 5000000 + 694200) continue;
-                                if (action == "sell" && totalLovelaceQuantity < 1500000 + 694200) continue;
-
-                                _dbContext.Orders.Add(new()
+                                if ((action == "buy" && totalQuantity >= 5000000 + 694200) ||
+                                    (action == "sell" && totalLovelaceQuantity >= 1500000 + 694200 && totalQuantity * ((decimal)rate * 1000000) >= 5000000 + 694200))
                                 {
-                                    OwnerAddress = txUtxos.Inputs.First().Address,
-                                    TxHash = utxo.TxHash,
-                                    Action = action,
-                                    Rate = rate,
-                                    Total = totalQuantity,
-                                    Status = Status.Open,
-                                    TxIndexes = siblingUtxos.Select(e => e.TxIndex).ToList(),
-                                    ExecuteTxId = string.Empty
-                                });
+
+                                    if (action == "buy") totalQuantity -= 694200;
+                                    _dbContext.Orders.Add(new()
+                                    {
+                                        OwnerAddress = txUtxos.Inputs.First().Address,
+                                        TxHash = utxo.TxHash,
+                                        Action = action,
+                                        Rate = rate,
+                                        Total = totalQuantity,
+                                        Status = Status.Open,
+                                        TxIndexes = siblingUtxos.Select(e => e.TxIndex).ToList(),
+                                        ExecuteTxId = string.Empty
+                                    });
+                                }
+                                else
+                                {
+                                    _dbContext.Orders.Add(new()
+                                    {
+                                        OwnerAddress = txUtxos.Inputs.First().Address,
+                                        TxHash = utxo.TxHash,
+                                        Action = action,
+                                        Rate = rate,
+                                        Total = totalQuantity,
+                                        Status = Status.Error,
+                                        TxIndexes = siblingUtxos.Select(e => e.TxIndex).ToList(),
+                                        ExecuteTxId = string.Empty
+                                    });
+                                }
                             }
                             else
                             {
@@ -241,9 +263,37 @@ public class Worker : BackgroundService
     {
         if (_dbContext.Orders is not null)
         {
-            var openOrders = await _dbContext.Orders.Where(e => e.Status == Status.Open).ToListAsync();
-            var sellOrders = openOrders.Where(e => e.Action == "sell").OrderByDescending(e => e.Rate).ToList();
-            var buyOrders = openOrders.Where(e => e.Action == "buy").OrderByDescending(e => e.Rate).ToList();
+            var openOrders = await _dbContext.Orders
+                .Where(e => e.Status == Status.Open)
+                .OrderByDescending(e => e.CreatedAt)
+                .ToListAsync();
+
+            foreach (var order in openOrders)
+            {
+                if (order.Action == "buy")
+                {
+                    var buyOrder = order;
+
+                    var matchedSellOrders = openOrders.Where(e => e.Action == "sell" && e.Rate <= buyOrder.Rate);
+                    var finalMatchedSellOrders = new List<Order>();
+                    var totalFilled = 0UL;
+                    var totalToFill = (ulong)(buyOrder.Total / (decimal)(buyOrder.Rate * 1000000));
+
+                    foreach (var sellOrder in matchedSellOrders)
+                    {
+                        finalMatchedSellOrders.Add(sellOrder);
+                        totalFilled += sellOrder.Total;
+                        if (totalFilled >= totalToFill)
+                        {
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+
+                }
+            }
         }
     }
 

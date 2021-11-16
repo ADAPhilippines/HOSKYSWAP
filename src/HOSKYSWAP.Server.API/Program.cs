@@ -3,6 +3,9 @@ using Blockfrost.Api.Extensions;
 using Blockfrost.Api.Models;
 using Blockfrost.Api.Services;
 using Microsoft.AspNetCore.Mvc;
+using HOSKYSWAP.Data;
+using Microsoft.EntityFrameworkCore;
+using HOSKYSWAP.Common;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Host.ConfigureLogging(logging =>
@@ -24,31 +27,33 @@ builder.Services.AddCors(options =>
     );
 });
 
+string connectionString = builder.Configuration.GetConnectionString("HOSKYSWAPDB");
+var blockfrostProjectID = builder.Configuration["BlockfrostProjectID"];
+var blockfrostAPI = builder.Configuration["BlockfrostAPI"];
+var cardanoNetwork = builder.Configuration["CardanoNetwork"];
+
+builder.Services.AddDbContext<HoskyDbContext>(options => options.UseNpgsql(connectionString), contextLifetime: ServiceLifetime.Singleton);
+builder.Services.AddBlockfrost(cardanoNetwork, blockfrostProjectID);
 var app = builder.Build();
- app.UseCors("AllowAll");
-
-var blockfrostProjectID = app.Configuration["BlockfrostProjectID"];
-var blockfrostAPI = app.Configuration["BlockfrostAPI"];
-var cardanoNetwork = app.Configuration["CardanoNetwork"];
-
-// Blockfrost API
-var blockFrostProvider = new ServiceCollection()
-    .AddBlockfrost(
-        cardanoNetwork,
-        blockfrostProjectID)
-    .BuildServiceProvider();
-
-var bfEpochService = blockFrostProvider.GetRequiredService<IEpochsService>();
-var bfBlockService = blockFrostProvider.GetRequiredService<IBlocksService>();
-var bfTxService = blockFrostProvider.GetRequiredService<ITransactionsService>();
-
+app.UseCors("AllowAll");
 
 var _logger = app.Logger;
-app.MapGet("/parameters", async () => await ExecuteSafelyAsync<EpochParamContentResponse>(bfEpochService.GetLatestParametersAsync()));
 
-app.MapGet("/blocks/latest", async () => await ExecuteSafelyAsync<BlockContentResponse>(bfBlockService.GetLatestAsync()));
+app.MapGet("/parameters", async (IEpochsService bfEpochService) => await bfEpochService.GetLatestParametersAsync());
 
-app.MapGet("/txs/{hash}", async ([FromRoute]string hash) => await ExecuteSafelyAsync<TxContentResponse>(bfTxService.GetAsync(hash)));
+app.MapGet("/blocks/latest", async (IBlocksService bfBlockService) => await bfBlockService.GetLatestAsync());
+
+app.MapGet("/txs/{hash}", async ([FromRoute] string hash, ITransactionsService bfTxService) => await bfTxService.GetAsync(hash));
+
+app.MapGet("/order/last/execute", async (HoskyDbContext dbContext) =>
+{
+    if (dbContext.Orders is not null)
+    {
+        return await dbContext.Orders.Where(o => o.Status == Status.Filled).OrderByDescending(o => o.CreatedAt).FirstOrDefaultAsync();
+    }
+    else
+        throw new Exception("Hello World");
+});
 
 app.MapPost("/tx/submit", SumbitTx);
 
@@ -56,27 +61,6 @@ _logger.LogInformation($"API Server running at: {DateTimeOffset.Now}");
 app.Run();
 
 #region DELEGATES
-async Task<object?> ExecuteSafelyAsync<T>(Task<T> funcAsync)
-{
-    try
-    {
-        object? result = null;
-        await Task.Run(() => {
-            funcAsync.Wait();
-            result = funcAsync.GetAwaiter().GetResult();
-        });
-
-        if(result is not null)
-            return result;
-        else
-            return new { error = true };
-    }
-    catch (Exception e)
-    {
-        _logger.LogError($"Error in fetching transaction: {e}");
-        return new { error = true, message = e.Message };
-    }
-};
 
 async Task SumbitTx(HttpContext ctx)
 {
@@ -95,7 +79,7 @@ async Task SumbitTx(HttpContext ctx)
         txId = txId.Replace("\"", string.Empty);
         Console.WriteLine(txId);
 
-        if(txId.Length != 64) throw new Exception(txId);
+        if (txId.Length != 64) throw new Exception(txId);
 
         await ctx.Response.WriteAsJsonAsync(new { status = 200, result = txId });
     }
@@ -105,4 +89,6 @@ async Task SumbitTx(HttpContext ctx)
         await ctx.Response.WriteAsJsonAsync(new { error = true, message = e });
     }
 }
+
+
 #endregion

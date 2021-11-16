@@ -1,25 +1,22 @@
-<Project Sdk="Microsoft.NET.Sdk.Worker">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>dotnet-HOSKYSWAP.Server.Worker-345641FF-8EAD-45AE-9C90-FC7A7222D263</UserSecretsId>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
+
   <ItemGroup>
-    <PackageReference Include="Blockfrost.Api" Version="1.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\HOSKYSWAP.Common\HOSKYSWAP.Common.csproj" />
-    <ProjectReference Include="..\cardanosharp-wallet\CardanoSharp.Wallet\CardanoSharp.Wallet.csproj" />
-    <ProjectReference Include="..\HOSKYSWAP.Data\HOSKYSWAP.Data.csproj" />
   </ItemGroup>
+
 </Project>

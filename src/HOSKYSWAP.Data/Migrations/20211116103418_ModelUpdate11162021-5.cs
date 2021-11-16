@@ -2,24 +2,24 @@
 
 #nullable disable
 
-namespace HOSKYSWAP.Server.Worker.Migrations
+namespace HOSKYSWAP.Data.Migrations
 {
-    public partial class ModelUpdate111620211 : Migration
+    public partial class ModelUpdate111620215 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
-                name: "ExecuteTxId",
+            migrationBuilder.AddColumn<bool>(
+                name: "IsCharged",
                 table: "Orders",
-                type: "text",
+                type: "boolean",
                 nullable: false,
-                defaultValue: "");
+                defaultValue: false);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "ExecuteTxId",
+                name: "IsCharged",
                 table: "Orders");
         }
     }
