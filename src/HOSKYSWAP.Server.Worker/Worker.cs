@@ -192,7 +192,7 @@ public class Worker : BackgroundService
                                     .ToList().ForEach(e => totalLovelaceQuantity += e);
 
                                 if ((action == "buy" && totalQuantity >= 5000000 + 694200) ||
-                                    (action == "sell" && totalLovelaceQuantity >= 1500000 + 694200 && totalQuantity * ((decimal)rate * 1000000) >= 5000000 + 694200))
+                                    (action == "sell" && totalLovelaceQuantity >= 1500000 + 694200 && totalQuantity * ((decimal)rate * 1000000) >= 5000000))
                                 {
 
                                     if (action == "buy") totalQuantity -= 694200;
@@ -265,43 +265,107 @@ public class Worker : BackgroundService
         {
             var openOrders = await _dbContext.Orders
                 .Where(e => e.Status == Status.Open)
-                .OrderByDescending(e => e.CreatedAt)
+                .OrderBy(e => e.CreatedAt)
                 .ToListAsync();
 
-            var txData = new Dictionary<Order, object>();
-            var ordersConsumed = new List<Order>();
-
+            // var txData = new Dictionary<Order, Order>();
+            var consumedOrders = new List<Order>();
+            byte[]? txBytes = null;
             foreach (var order in openOrders)
             {
-                if (ordersConsumed.Any(o => o == order)) continue;
+                if (consumedOrders.Any(e => e == order)) continue;
 
                 if (order.Action == "buy")
                 {
                     var buyOrder = order;
 
-                    var matchedSellOrders = openOrders.Where(e => e.Action == "sell" && e.Rate <= buyOrder.Rate);
-                    var finalMatchedSellOrders = new List<Order>();
-                    var totalFilled = 0UL;
-                    var totalToFill = (ulong)(buyOrder.Total / (decimal)(buyOrder.Rate * 1000000));
+                    var matchOrder = openOrders.Where(e =>
+                        e.Action == "sell" &&
+                        e.Rate == buyOrder.Rate && buyOrder.Total == (ulong)(e.Total * e.Rate * 1000000) &&
+                        !consumedOrders.Any(e1 => e == e1)
+                    ).FirstOrDefault();
 
-                    foreach (var sellOrder in matchedSellOrders)
+                    if (buyOrder is not null && matchOrder is not null)
                     {
-                        finalMatchedSellOrders.Add(sellOrder);
-                        totalFilled += sellOrder.Total;
-                        if (totalFilled >= totalToFill)
-                        {
-                            txData.Add(order, new { hoskyTotal = totalToFill, lovelaceTotal = totalToFill * buyOrder.Rate, orders = finalMatchedSellOrders });
-                            ordersConsumed.Add(order);
-                            ordersConsumed.AddRange(finalMatchedSellOrders);
-                        }
+                        // txData.Add(buyOrder, matchOrder);
+                        consumedOrders.Add(buyOrder);
+                        consumedOrders.Add(matchOrder);
                     }
                 }
-                else
+                else if (order.Action == "sell")
                 {
+                    var sellOrder = order;
+                    var matchOrder = openOrders.Where(e =>
+                        e.Action == "buy" &&
+                        e.Rate == sellOrder.Rate &&
+                        e.Total == (ulong)(sellOrder.Total * sellOrder.Rate * 1000000) &&
+                        !consumedOrders.Any(e1 => e == e1)).FirstOrDefault();
 
+                    if (sellOrder is not null && matchOrder is not null)
+                    {
+                        // txData.Add(matchOrder, sellOrder);
+                        consumedOrders.Add(sellOrder);
+                        consumedOrders.Add(matchOrder);
+                    }
                 }
+
+                if (consumedOrders.Count <= 0) continue;
+                txBytes = await BuildTxFromOrdersAsync(consumedOrders);
             }
+
+            if (txBytes is not null)
+                await SubmitTxBytesAsync(txBytes);
         }
+    }
+
+    private async Task<byte[]?> BuildTxFromOrdersAsync(List<Order> orders)
+    {
+        if (_blockfrostBlockService is not null && _blockfrostEpochService is not null && _blockfrostTransactionsService is not null)
+        {
+            var latestBlock = await _blockfrostBlockService.GetLatestAsync();
+            var protocolParam = await _blockfrostEpochService.GetLatestParametersAsync();
+
+            var transactionBody = TransactionBodyBuilder.Create;
+            var totalFee = (ulong)orders.Count * 694200UL;
+
+            foreach (var order in orders)
+            {
+                foreach (var idx in order.TxIndexes)
+                {
+                    transactionBody.AddInput(order.TxHash.HexToByteArray(), (uint)idx);
+                }
+                if (order.Action == "buy")
+                    transactionBody.AddOutput(new Address(order.OwnerAddress), 1500000,
+                        TokenBundleBuilder.Create.AddToken(_assetPolicyId.HexToByteArray(), _assetName.HexToByteArray(), (ulong)(order.Total / (order.Rate * 1000000))));
+                else if (order.Action == "sell")
+                    transactionBody.AddOutput(new Address(order.OwnerAddress), (ulong)(order.Total * (order.Rate * 1000000)));
+            }
+
+            transactionBody.AddOutput(_walletAddress, totalFee);
+
+            transactionBody
+                .SetTtl((uint)latestBlock.Slot + 1000)
+                .SetFee(0);
+
+            var witnesses = TransactionWitnessSetBuilder.Create
+                .AddVKeyWitness(_walletPublicKey, _walletPrivateKey);
+
+            var transactionBuilder = TransactionBuilder.Create
+                .SetBody(transactionBody)
+                .SetWitnesses(witnesses);
+
+            var transaction = transactionBuilder.Build();
+
+            var fee = transaction.CalculateFee((uint)protocolParam.MinFeeA, (uint)protocolParam.MinFeeB);
+
+            transactionBody.SetFee(fee);
+            transaction = transactionBuilder.Build();
+            transaction.TransactionBody.TransactionOutputs.Last().Value.Coin -= fee;
+
+            return transaction.Serialize();
+        }
+
+        return null;
     }
 
     private async Task SendTxAsync(string address, ulong lovelaceToSend, (string, string, ulong)? asset, (int, object)? metadata = null)
