@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using HOSKYSWAP.Common;
 
-namespace HOSKYSWAP.Server.Worker;
+namespace HOSKYSWAP.Data;
 
 public class HoskyDbContext : DbContext
 {

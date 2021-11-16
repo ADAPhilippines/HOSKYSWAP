@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace HOSKYSWAP.Server.Worker.Migrations
+namespace HOSKYSWAP.Data.Migrations
 {
     public partial class ModelUpdate111520211 : Migration
     {
