@@ -268,8 +268,13 @@ public class Worker : BackgroundService
                 .OrderByDescending(e => e.CreatedAt)
                 .ToListAsync();
 
+            var txData = new Dictionary<Order, object>();
+            var ordersConsumed = new List<Order>();
+
             foreach (var order in openOrders)
             {
+                if (ordersConsumed.Any(o => o == order)) continue;
+
                 if (order.Action == "buy")
                 {
                     var buyOrder = order;
@@ -285,7 +290,9 @@ public class Worker : BackgroundService
                         totalFilled += sellOrder.Total;
                         if (totalFilled >= totalToFill)
                         {
-                            break;
+                            txData.Add(order, new { hoskyTotal = totalToFill, lovelaceTotal = totalToFill * buyOrder.Rate, orders = finalMatchedSellOrders });
+                            ordersConsumed.Add(order);
+                            ordersConsumed.AddRange(finalMatchedSellOrders);
                         }
                     }
                 }
