@@ -56,7 +56,7 @@ public partial class IndexBase : ComponentBase
         {
             if (FromToken == "ADA")
             {
-                ToAmount = Math.Round(FromAmount / PriceAmount, MidpointRounding.ToZero);
+                ToAmount = (ulong)(FromAmount / PriceAmount);
             }
             else
             {
@@ -80,7 +80,7 @@ public partial class IndexBase : ComponentBase
             if (FromToken == "ADA")
                 FromAmount = ToAmount * PriceAmount;
             else
-                FromAmount = Math.Round(ToAmount / PriceAmount, MidpointRounding.ToZero);
+                FromAmount = (ulong)(ToAmount / PriceAmount);
         }
         else
         {
