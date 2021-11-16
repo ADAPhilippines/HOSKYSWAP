@@ -1,3 +1,4 @@
+using HOSKYSWAP.UI.WASM.Services.JSInterop;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
@@ -5,6 +6,7 @@ namespace HOSKYSWAP.UI.WASM.Pages;
 
 public partial class IndexBase : ComponentBase
 {
+    [Inject] private CardanoWalletInteropService? CardanoWalletInteropService { get; set; }
     protected string ToToken { get; set; } = "HOSKY";
     protected string FromToken { get; set; } = "ADA";
     protected decimal FromAmount { get; set; }

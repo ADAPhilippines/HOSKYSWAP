@@ -756,12 +756,12 @@ html, body {
   margin-top: 1rem !important;
 }
 
-.mt-2 {
-  margin-top: 0.5rem !important;
-}
-
 .mr-2 {
   margin-right: 0.5rem !important;
+}
+
+.mt-2 {
+  margin-top: 0.5rem !important;
 }
 
 .-mt-6 {
@@ -804,6 +804,10 @@ html, body {
   display: grid !important;
 }
 
+.h-\[100px\] {
+  height: 100px !important;
+}
+
 .h-\[500px\] {
   height: 500px !important;
 }
@@ -836,36 +840,20 @@ html, body {
   height: 5rem !important;
 }
 
-.h-\[200px\] {
-  height: 200px !important;
-}
-
-.h-\[100px\] {
-  height: 100px !important;
-}
-
-.max-h-\[430px\] {
-  max-height: 430px !important;
+.max-h-\[450px\] {
+  max-height: 450px !important;
 }
 
 .max-h-\[300px\] {
   max-height: 300px !important;
 }
 
-.max-h-\[425px\] {
-  max-height: 425px !important;
-}
-
-.max-h-\[435px\] {
-  max-height: 435px !important;
-}
-
-.max-h-\[450px\] {
-  max-height: 450px !important;
-}
-
 .w-full {
   width: 100% !important;
+}
+
+.w-\[100px\] {
+  width: 100px !important;
 }
 
 .w-3\/4 {
@@ -894,14 +882,6 @@ html, body {
 
 .w-\[3rem\] {
   width: 3rem !important;
-}
-
-.w-\[200px\] {
-  width: 200px !important;
-}
-
-.w-\[100px\] {
-  width: 100px !important;
 }
 
 .max-w-base-content {
@@ -981,13 +961,13 @@ html, body {
   gap: 0.3rem !important;
 }
 
-.gap-y-2 {
-  row-gap: 0.5rem !important;
-}
-
 .gap-x-3 {
   -moz-column-gap: 0.75rem !important;
        column-gap: 0.75rem !important;
+}
+
+.gap-y-2 {
+  row-gap: 0.5rem !important;
 }
 
 .divide-x > :not([hidden]) ~ :not([hidden]) {
@@ -1094,10 +1074,6 @@ html, body {
   padding-top: 4px !important;
 }
 
-.pb-1 {
-  padding-bottom: 0.25rem !important;
-}
-
 .pb-2 {
   padding-bottom: 0.5rem !important;
 }
@@ -1118,10 +1094,6 @@ html, body {
   padding-top: 6px !important;
 }
 
-.pb-0 {
-  padding-bottom: 0px !important;
-}
-
 .text-left {
   text-align: left !important;
 }
@@ -1139,14 +1111,14 @@ html, body {
   line-height: 1.75rem !important;
 }
 
-.text-xs {
-  font-size: 0.75rem !important;
-  line-height: 1rem !important;
-}
-
 .text-sm {
   font-size: 0.875rem !important;
   line-height: 1.25rem !important;
+}
+
+.text-xs {
+  font-size: 0.75rem !important;
+  line-height: 1rem !important;
 }
 
 .text-xl {

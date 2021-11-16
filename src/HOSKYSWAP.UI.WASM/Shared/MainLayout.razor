@@ -29,9 +29,17 @@
             </NavLink>
             <div class="text-white font-semibold"><span class="text-currency">1 $ADA</span> = <span class="text-currency">1,000,000 $HOSKY</span> </div>
             <div class="text-white font-semibold"><span class="text-currency">$100,000</span> MARKETCAP</div>
-            <MudButton Class="text-sm bg-gradient-to-r from-aph-indigo to-aph-blue filter brightness-100 hover:brightness-125 text-white font-semibold rounded-lg p-3 normal-case">
-                <MudIcon Icon="@Icons.Filled.AccountBalanceWallet" Class="mr-2"/> Connect Wallet
-            </MudButton>
+            @if (IsWalletConnected)
+            {
+                <div class="text-white font-semibold">@FormatAddress()</div>
+            }
+            else
+            {
+                <MudButton Class="text-sm bg-gradient-to-r from-aph-indigo to-aph-blue filter brightness-100 hover:brightness-125 text-white font-semibold rounded-lg p-3 normal-case flex-0"
+                           OnClick="@OnConnectBtnClicked">
+                    <MudIcon Icon="@Icons.Filled.AccountBalanceWallet" Class="mr-2"/> Connect Wallet
+                </MudButton>
+            }
         </div>
     </div>
     <main class="w-screen h-full z-0 flex justify-center">

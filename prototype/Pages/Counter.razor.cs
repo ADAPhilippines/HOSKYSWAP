@@ -13,7 +13,7 @@ public partial class Counter
     {
         const string hosky = "88672eaaf6f5c5fb59ffa5b978016207dbbf769014c6870d31adc4de484f534b59";
         const string swapAddress =
-            "addr_test1qph75avrwfstny4hall2ufw2q7w3znpy9qrn4tjve348vdf3sd5n2afpnvv9kuc7ga4gnrurvl99vdj4dk30u2wwjzcq8dhr45";
+            "addr_test1vqc9ekv93a55g6m59ucceh8v83he3hyve6eawm79dczezsqn8cms9";
         if (CardanoWalletInteropService is null) return;
         
         if(!await CardanoWalletInteropService.IsWalletConnectedAsync())
@@ -31,7 +31,7 @@ public partial class Counter
                 new Asset
                 {
                     Unit = hosky,
-                    Quantity = 10
+                    Quantity = 20_000_000
                 },
                 new Asset
                 {
@@ -40,7 +40,7 @@ public partial class Counter
                 }
             }
         },
-         JsonSerializer.Serialize(new {rate="0.0000001", action="sell"}));
+         JsonSerializer.Serialize(new {rate="0.9", action="sell"}));
         
         var tx = await CardanoWalletInteropService.GetTransactionAsync(txId);
         Console.WriteLine(tx.Hash.ToString());
