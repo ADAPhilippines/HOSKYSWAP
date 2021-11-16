@@ -1,5 +1,7 @@
 ﻿@inherits LayoutComponentBase
 <MudThemeProvider/>
+<MudDialogProvider/>
+<MudSnackbarProvider/>
 <div class="page">
     <div class="fixed top-0 left-0 w-screen h-screen bg-aph-darkblue z-0">
         @* Center Right *@
@@ -21,7 +23,7 @@
         <div class="first-motion rounded-full blurred-circle-six dark:dark-blurred-circle-six z-0"></div>
     </div>
     @* Header *@
-    <div class="sticky top-0 h-[4.5rem] backdrop-filter backdrop-blur-[5px] bg-transparent-dark w-screen flex justify-center z-10">
+    <div class="hidden lg:flex sticky top-0 h-[4.5rem] backdrop-filter backdrop-blur-[5px] bg-transparent-dark w-screen justify-center z-10">
         <div class="max-w-header w-full flex flex-row justify-between items-center">
             <NavLink href="/">
                 <img class="h-[3rem] w-[3rem] inline mr-[5px]" src="images/hosky.webp" alt="Hosky">
@@ -42,13 +44,13 @@
             }
         </div>
     </div>
-    <main class="w-screen h-full z-0 flex justify-center">
+    <main class="hidden lg:block w-screen h-full z-0 flex justify-center">
         @* Content *@
         <article class="w-full flex flex-col align-center">
             @Body
         </article>
     </main>
-    <footer class="w-full flex justify-center text-white z-10 backdrop-filter backdrop-blur-[5px] bg-transparent-dark w-screen font-semibold">
+    <footer class="hidden lg:flex w-full  justify-center text-white z-10 backdrop-filter backdrop-blur-[5px] bg-transparent-dark w-screen font-semibold">
         <div class="flex h-[5rem] text-center items-center justify-around flex-row text-white max-w-header w-full">
             <div class="flex h-full items-center">
                 <NavLink href="/">
@@ -72,4 +74,15 @@
             </div>
         </div>
     </footer>
+
+    <div class="flex flex-col fixed top-0 left-0 lg:hidden z-10 w-full h-screen">
+        <div class="flex flex-col justify-center align-center h-full">
+            <MudCard Class="backdrop-filter backdrop-blur-[5px] bg-transparent-dark w-[320px] flex flex-col align-center p-8">
+                <img src="/images/hosky.webp" alt="$HOSKY" class="animate-bounce h-[100px] w-[100px]"/>
+                <div class="font-semibold text-white text-center">
+                    Mobile Version currently not available...
+                </div>
+            </MudCard>
+        </div>
+    </div>
 </div>

@@ -1,15 +1,19 @@
 using HOSKYSWAP.UI.WASM.Services.JSInterop;
+using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
+using MudBlazor;
 
 namespace HOSKYSWAP.UI.WASM.Pages;
 
 public partial class IndexBase : ComponentBase
 {
     [Inject] private CardanoWalletInteropService? CardanoWalletInteropService { get; set; }
+    [Inject] private ILocalStorageService? LocalStorage { get; set; }
     protected string ToToken { get; set; } = "HOSKY";
     protected string FromToken { get; set; } = "ADA";
-    protected decimal FromAmount { get; set; }
+    protected decimal FromAmount { get; set; } = 5m;
     protected decimal ToAmount { get; set; }
     protected decimal PriceAmount { get; set; } = 0.000001m;
     protected double BuyRatioWidth { get; set; } = 70;
@@ -17,7 +21,27 @@ public partial class IndexBase : ComponentBase
     protected bool DisplayToError { get; set; }
     protected bool DisplayFromError { get; set; }
     protected string MinimumADAErrorMessage = "Minimum $ADA to swap is 5 $ADA";
+    protected bool HasUnfilledOrder { get; set; }
+    protected DialogOptions DialogOptions = new() {FullWidth = true, DisableBackdropClick = true};
+    protected bool IsDialogVisible { get; set; }
+    private string DidReadDialogStorageKey = "DidReadDialog";
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Check here
+            if (LocalStorage != null)
+            {
+                var didRead = await LocalStorage.GetItemAsync<bool?>(DidReadDialogStorageKey);
+                if (didRead == false || didRead == null)
+                {
+                    IsDialogVisible = true;
+                }
+            }
+            await InvokeAsync(StateHasChanged);
+        }
+    }
 
     protected async void OnFromAmountChange(decimal fromAmount)
     {
@@ -32,12 +56,12 @@ public partial class IndexBase : ComponentBase
             {
                 ToAmount = FromAmount * PriceAmount;
             }
-                
         }
         else
         {
             ToAmount = 0;
         }
+
         ValidateForm();
         await InvokeAsync(StateHasChanged);
     }
@@ -47,15 +71,16 @@ public partial class IndexBase : ComponentBase
         ToAmount = toAmount;
         if (ToAmount > 0 && PriceAmount > 0)
         {
-            if (FromToken == "ADA") 
+            if (FromToken == "ADA")
                 FromAmount = ToAmount * PriceAmount;
-            else 
+            else
                 FromAmount = Math.Round(ToAmount / PriceAmount, MidpointRounding.ToZero);
         }
         else
         {
             FromAmount = 0;
         }
+
         ValidateForm();
         await InvokeAsync(StateHasChanged);
     }
@@ -110,7 +135,7 @@ public partial class IndexBase : ComponentBase
         {
             DisplayFromError = false;
         }
-        
+
         if (ToAmount < 5 && ToToken == "ADA")
         {
             DisplayToError = true;
@@ -119,5 +144,34 @@ public partial class IndexBase : ComponentBase
         {
             DisplayToError = false;
         }
+    }
+
+    protected async void OnSubmitSwapClicked(MouseEventArgs args)
+    {
+        HasUnfilledOrder = true;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected async void OnCancelSwapClicked(MouseEventArgs args)
+    {
+        HasUnfilledOrder = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected bool GetShouldDisableSwapButton()
+    {
+        return DisplayFromError || DisplayToError;
+    }
+
+    protected async void OnCloseDialog(MouseEventArgs args)
+    {
+        await Task.Delay(200);
+        IsDialogVisible = false;
+        if (LocalStorage != null)
+        {
+            await LocalStorage.SetItemAsync(DidReadDialogStorageKey, true);
+        }
+
+        await InvokeAsync(StateHasChanged);
     }
 }

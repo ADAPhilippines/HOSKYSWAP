@@ -13,6 +13,7 @@ using CardanoSharp.Wallet.Extensions;
 using CardanoSharp.Wallet.Extensions.Models.Transactions;
 using System.Net.Http.Headers;
 using Blockfrost.Api.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace HOSKYSWAP.Server.Worker;
 
@@ -58,36 +59,36 @@ public class Worker : BackgroundService
 
         // Tests
         // MintFakeHoskyAsync().ConfigureAwait(false).GetAwaiter().GetResult();
-        Task.Run(async () =>
-        {
-            await SendTxAsync(
-                _walletAddressString,
-                10000000 + 694200,
-                null,
-                (7283, new { action = "buy", rate = "0.000001" })
-            );
+        // Task.Run(async () =>
+        // {
+        //     // await SendTxAsync(
+        //     //     "addr_test1vqc9ekv93a55g6m59ucceh8v83he3hyve6eawm79dczezsqn8cms9",
+        //     //     1000000,
+        //     //     null,
+        //     //     null
+        //     // );
 
-            await SendTxAsync(
-                _walletAddressString,
-                10000000 + 694200,
-                null,
-                (7283, new { action = "buy", rate = "0.000002" })
-            );
+        //     // await SendTxAsync(
+        //     //     _walletAddressString,
+        //     //     10000000 + 694200,
+        //     //     null,
+        //     //     (7283, new { action = "buy", rate = "0.000002" })
+        //     // );
 
-            await SendTxAsync(
-                _walletAddressString,
-                1500000 + 694200,
-                (_assetPolicyId, _assetName, 100),
-                (7283, new { action = "sell", rate = "0.000001" })
-            );
+        //     // await SendTxAsync(
+        //     //     _walletAddressString,
+        //     //     1500000 + 694200,
+        //     //     (_assetPolicyId, _assetName, 100),
+        //     //     (7283, new { action = "sell", rate = "0.000001" })
+        //     // );
 
-            await SendTxAsync(
-                _walletAddressString,
-                1500000 + 694200,
-                (_assetPolicyId, _assetName, 100),
-                (7283, new { action = "sell", rate = "0.000003" })
-            );
-        }).ConfigureAwait(false).GetAwaiter().GetResult();
+        //     // await SendTxAsync(
+        //     //     _walletAddressString,
+        //     //     1500000 + 694200,
+        //     //     (_assetPolicyId, _assetName, 100),
+        //     //     (7283, new { action = "sell", rate = "0.000003" })
+        //     // );
+        // }).ConfigureAwait(false).GetAwaiter().GetResult();
 
     }
 
@@ -119,24 +120,130 @@ public class Worker : BackgroundService
             var utxos = await GetWalletUTXOAsync();
             foreach (var utxo in utxos)
             {
-                if (!_dbContext.Orders.Where(o => o.TxHash == utxo.TxHash && o.TxIndex == utxo.TxIndex).Any())
+                if (_dbContext.Orders.Any(e =>
+                    (e.TxHash == utxo.TxHash && e.TxIndexes.Contains(utxo.TxIndex)) ||
+                    (e.TxHash == utxo.TxHash && (e.Status == Status.Ignored || e.Status == Status.Error))
+                )) continue;
+
+                var txUtxos = await _blockfrostTransactionsService.GetUtxosAsync(utxo.TxHash, stoppingToken);
+                var siblingUtxos = utxos.Where(e => e.TxHash == utxo.TxHash);
+                if (txUtxos.Inputs.Where(e => e.Address == _walletAddressString).Any())
+                {
+                    siblingUtxos.Select(e => e.TxIndex);
+                    _dbContext.Orders.Add(new()
+                    {
+                        OwnerAddress = _walletAddressString,
+                        TxHash = utxo.TxHash,
+                        Action = string.Empty,
+                        Rate = 0,
+                        Total = 0,
+                        Status = Status.Ignored,
+                        TxIndexes = siblingUtxos.Select(e => e.TxIndex).ToList(),
+                        ExecuteTxId = string.Empty
+                    });
+                }
+                else
                 {
                     var meta = await _blockfrostTransactionsService.GetMetadataAsync(utxo.TxHash, stoppingToken);
-                    var hoskyMeta = meta.Where(m => m.Label == "7283").FirstOrDefault();
-                    if (hoskyMeta is not null)
+                    var hoskySwapMeta = meta.Where(m => m.Label == "7283").FirstOrDefault();
+                    if (hoskySwapMeta is null)
                     {
-                        var action = hoskyMeta.JsonMetadata.GetProperty("action").GetString();
-                        var rate = double.Parse(hoskyMeta.JsonMetadata.GetProperty("rate").GetString() ?? throw new Exception("Rate is null"));
-                        
-                        switch (action)
+                        _logger.LogInformation("No hosky swap meta found for tx {txHash}", utxo.TxHash);
+                        _dbContext.Orders.Add(new()
                         {
-                            case "action":
-                                
-                                break;
+                            OwnerAddress = txUtxos.Inputs.First().Address,
+                            TxHash = utxo.TxHash,
+                            Action = string.Empty,
+                            Rate = 0,
+                            Total = 0,
+                            Status = Status.Error,
+                            TxIndexes = siblingUtxos.Select(e => e.TxIndex).ToList(),
+                            ExecuteTxId = string.Empty
+                        });
+                    }
+                    else
+                    {
+
+                        if (hoskySwapMeta.JsonMetadata.TryGetProperty("action", out var actionProp) &&
+                            hoskySwapMeta.JsonMetadata.TryGetProperty("rate", out var rateProp) &&
+                            rateProp.GetString() != null &&
+                            actionProp.GetString() != null)
+                        {
+                            var action = actionProp.GetString();
+                            if (decimal.TryParse(rateProp.GetString(), out var rate) &&
+                                action != null &&
+                                (action == "buy" || action == "sell"))
+                            {
+                                var totalQuantity = 0UL;
+                                var totalLovelaceQuantity = 0UL;
+                                var unit = action == "buy" ? "lovelace" : $"{_assetPolicyId}{_assetName}";
+
+                                siblingUtxos
+                                    .Select(e => ulong.Parse(e.Amount.Where(a => a.Unit == unit).First().Quantity))
+                                    .ToList().ForEach(e => totalQuantity += e);
+
+                                siblingUtxos
+                                    .Select(e => ulong.Parse(e.Amount.Where(a => a.Unit == "lovelace").First().Quantity))
+                                    .ToList().ForEach(e => totalLovelaceQuantity += e);
+
+                                if (action == "buy" && totalQuantity < 5000000 + 694200) continue;
+                                if (action == "sell" && totalLovelaceQuantity < 1500000 + 694200) continue;
+
+                                _dbContext.Orders.Add(new()
+                                {
+                                    OwnerAddress = txUtxos.Inputs.First().Address,
+                                    TxHash = utxo.TxHash,
+                                    Action = action,
+                                    Rate = rate,
+                                    Total = totalQuantity,
+                                    Status = Status.Open,
+                                    TxIndexes = siblingUtxos.Select(e => e.TxIndex).ToList(),
+                                    ExecuteTxId = string.Empty
+                                });
+                            }
+                            else
+                            {
+                                _dbContext.Orders.Add(new()
+                                {
+                                    OwnerAddress = txUtxos.Inputs.First().Address,
+                                    TxHash = utxo.TxHash,
+                                    Action = string.Empty,
+                                    Rate = 0,
+                                    Total = 0,
+                                    Status = Status.Error,
+                                    TxIndexes = siblingUtxos.Select(e => e.TxIndex).ToList(),
+                                    ExecuteTxId = string.Empty
+                                });
+                            }
+                        }
+                        else
+                        {
+                            _dbContext.Orders.Add(new()
+                            {
+                                OwnerAddress = txUtxos.Inputs.First().Address,
+                                TxHash = utxo.TxHash,
+                                Action = string.Empty,
+                                Rate = 0,
+                                Total = 0,
+                                Status = Status.Error,
+                                TxIndexes = siblingUtxos.Select(e => e.TxIndex).ToList(),
+                                ExecuteTxId = string.Empty
+                            });
                         }
                     }
                 }
+                await _dbContext.SaveChangesAsync();
             }
+        }
+    }
+
+    private async Task MatchOrdersAsync()
+    {
+        if (_dbContext.Orders is not null)
+        {
+            var openOrders = await _dbContext.Orders.Where(e => e.Status == Status.Open).ToListAsync();
+            var sellOrders = openOrders.Where(e => e.Action == "sell").OrderByDescending(e => e.Rate).ToList();
+            var buyOrders = openOrders.Where(e => e.Action == "buy").OrderByDescending(e => e.Rate).ToList();
         }
     }
 

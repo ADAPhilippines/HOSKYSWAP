@@ -3,3 +3,4 @@
 **/node_modules/**
 **/appsettings.Development.json
 **/appsettings.json
+**/.DS_Store
