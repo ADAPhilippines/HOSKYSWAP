@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using HOSKYSWAP.Server.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace HOSKYSWAP.Server.Worker.Migrations
 {
     [DbContext(typeof(HoskyDbContext))]
-    partial class HoskyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20211116034816_ModelUpdate11162021-3")]
+    partial class ModelUpdate111620213
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -57,9 +59,9 @@ namespace HOSKYSWAP.Server.Worker.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<List<long>>("TxIndexes")
+                    b.Property<List<int>>("TxIndexes")
                         .IsRequired()
-                        .HasColumnType("bigint[]");
+                        .HasColumnType("integer[]");
 
                     b.HasKey("Id");
 
