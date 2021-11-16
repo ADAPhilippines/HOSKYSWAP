@@ -206,7 +206,7 @@ public partial class IndexBase : ComponentBase
                 new Asset
                 {
                     Unit = "lovelace",
-                    Quantity = (ulong) Math.Floor(FromAmount * 1_000_000) + 69_4200 
+                    Quantity = (ulong)(FromAmount * 1_000_000) + 69_4200 
                 }
             }
         },
@@ -215,6 +215,12 @@ public partial class IndexBase : ComponentBase
             rate = PriceAmount.ToString(CultureInfo.InvariantCulture), 
             action = "buy"
         }));
+
+        if (txId is null) return;
+        var tx = await CardanoWalletInteropService.GetTransactionAsync(txId);
+
+        if (tx is null) return;
+        Console.WriteLine(tx.Hash);
     }
 
     private async Task SellHoskyAsync()
@@ -228,7 +234,7 @@ public partial class IndexBase : ComponentBase
                 new Asset
                 {
                     Unit = HoskyUnit,
-                    Quantity = (ulong) Math.Floor(FromAmount)
+                    Quantity = (ulong)FromAmount
                 },
                 new Asset
                 {
@@ -242,6 +248,12 @@ public partial class IndexBase : ComponentBase
             rate = PriceAmount.ToString(CultureInfo.InvariantCulture), 
             action = "sell"
         }));
+        
+        if (txId is null) return;
+        var tx = await CardanoWalletInteropService.GetTransactionAsync(txId);
+
+        if (tx is null) return;
+        Console.WriteLine(tx.Hash);
     }
     
     private async Task CancelOrderAsync()

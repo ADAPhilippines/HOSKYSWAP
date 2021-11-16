@@ -42,7 +42,7 @@ class CardanoWalletInterop {
         }
         return result;
     }
-    
+
     public async GetWalletAddressAsync(): Promise<string> {
         await CardanoWalletInterop.EnsureCardanoWasmLoadedAsync();
         let result = "";
@@ -239,7 +239,7 @@ class CardanoWalletInterop {
 
                 _metadata = CardanoWasmLoader.Cardano.AuxiliaryData.new();
                 _metadata.set_metadata(generalMetadata);
-                
+
                 txBuilder.set_auxiliary_data(_metadata);
             }
 
@@ -250,7 +250,7 @@ class CardanoWalletInterop {
             txBuilder.add_change_if_needed(address);
 
             const txBody = txBuilder.build();
-            
+
             const rawTx = CardanoWasmLoader.Cardano.Transaction.new(
                 txBody,
                 CardanoWasmLoader.Cardano.TransactionWitnessSet.new(),
@@ -363,7 +363,7 @@ class CardanoWalletInterop {
             return responseBody.result;
         }
     }
-    
+
     private async GetTransactionAsync(hash: string): Promise<Tx | null> {
         let transaction: Tx | null = null;
         while (true) {
@@ -404,12 +404,16 @@ class CardanoWalletInterop {
     }
 
     private async FetchDataAsync<T>(endpoint: string): Promise<T | null> {
-        const response = await fetch(`${this.hoskySwapServerUrl}/${endpoint}`);
-        const responseBody = await response.json();
-        if (responseBody.error) {
+        try {
+            const response = await fetch(`${this.hoskySwapServerUrl}/${endpoint}`);
+            const responseBody = await response.json();
+            if (responseBody.error) {
+                return null;
+            } else {
+                return responseBody;
+            }
+        } catch (e) {
             return null;
-        } else {
-            return responseBody;
         }
     }
 
