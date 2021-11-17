@@ -47,7 +47,7 @@ public partial class IndexBase : ComponentBase
     protected bool IsGeneralDialogVisible { get; set; }
     protected bool IsGeneralActionVisible { get; set; }
     protected string GeneralDialogMessage { get; set; } = string.Empty;
-    private HttpClient HttpClient { get; set; } = new HttpClient();
+    protected decimal TotalRugpulledADA { get; set; }
 
     protected override void OnInitialized()
     {
@@ -78,6 +78,7 @@ public partial class IndexBase : ComponentBase
                 CardanoWalletInteropService.Error += OnWalletError;
             }
 
+            TotalRugpulledADA = await BackendService.GetTotalFeesRugpulledAsync();
             await InvokeAsync(StateHasChanged);
         }
     }
