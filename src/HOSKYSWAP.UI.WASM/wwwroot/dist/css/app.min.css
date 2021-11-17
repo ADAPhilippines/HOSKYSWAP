@@ -808,10 +808,6 @@ html, body {
   margin-left: 24px !important;
 }
 
-.mb-2 {
-  margin-bottom: 0.5rem !important;
-}
-
 .mb-0 {
   margin-bottom: 0px !important;
 }
@@ -830,6 +826,22 @@ html, body {
 
 .mr-\[6px\] {
   margin-right: 6px !important;
+}
+
+.mb-2 {
+  margin-bottom: 0.5rem !important;
+}
+
+.mt-1 {
+  margin-top: 0.25rem !important;
+}
+
+.mb-24 {
+  margin-bottom: 6rem !important;
+}
+
+.mb-20 {
+  margin-bottom: 5rem !important;
 }
 
 .inline {
@@ -1277,6 +1289,10 @@ html, body {
   font-weight: 200 !important;
 }
 
+.font-bold {
+  font-weight: 700 !important;
+}
+
 .uppercase {
   text-transform: uppercase !important;
 }
@@ -1310,9 +1326,19 @@ html, body {
   color: rgba(16, 185, 129, var(--tw-text-opacity)) !important;
 }
 
+.text-gray-500 {
+  --tw-text-opacity: 1 !important;
+  color: rgba(107, 114, 128, var(--tw-text-opacity)) !important;
+}
+
 .text-red-500 {
   --tw-text-opacity: 1 !important;
   color: rgba(239, 68, 68, var(--tw-text-opacity)) !important;
+}
+
+.text-gray-600 {
+  --tw-text-opacity: 1 !important;
+  color: rgba(75, 85, 99, var(--tw-text-opacity)) !important;
 }
 
 .opacity-50 {

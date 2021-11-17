@@ -135,6 +135,15 @@ public class Worker : BackgroundService
                 _logger.LogInformation("Cancelling Order: {0}", cancelledOrder.TxHash);
 
                 var ordersToCancel = await _dbContext.Orders.Where(o => o.Status == Status.Open && o.OwnerAddress == cancelledOrder.OwnerAddress).ToListAsync();
+
+                if(ordersToCancel.Count <=0)
+                {
+                    _logger.LogInformation("Cancel Order Ignored: {0}", cancelledOrder.TxHash);
+                    cancelledOrder.Status = Status.Ignored;
+                    await _dbContext.SaveChangesAsync();
+                    continue;
+                }
+
                 var transactionBody = TransactionBodyBuilder.Create;
                 ordersToCancel.Add(cancelledOrder);
                 var totalFee = (ulong)ordersToCancel.Count * 694200UL;

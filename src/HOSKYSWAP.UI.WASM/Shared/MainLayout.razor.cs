@@ -103,7 +103,7 @@ public partial class MainLayout: IDisposable
             };
             
             await Task.WhenAll(tasks);
-            await Task.Delay(10000);
+            await Task.Delay(5000);
         }
     }
 
