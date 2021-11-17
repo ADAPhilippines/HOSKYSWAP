@@ -186,8 +186,8 @@
         <MudCard Class="backdrop-filter backdrop-blur-[5px] bg-transparent-dark flex flex-row justify-center mt-12 p-[4px] text-white w-full place-self-center">
             @if (AppStateService?.OpenOrderRatio is not null)
             {
-                <div class="bg-green-500 h-2 p-0" style="width:@AppStateService.OpenOrderRatio.Buy%"></div>
-                <div class="bg-red-500 h-2 p-0" style="width:@AppStateService.OpenOrderRatio.Sell%"></div>
+                <div class="bg-green-500 h-2 p-0 transition-all" style="width:@AppStateService.OpenOrderRatio.Buy%"></div>
+                <div class="bg-red-500 h-2 p-0 transition-all" style="width:@AppStateService.OpenOrderRatio.Sell%"></div>
             }
         </MudCard>
     </div>

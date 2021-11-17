@@ -1006,12 +1006,12 @@ html, body {
           animation: spin 1s linear infinite !important;
 }
 
-.cursor-pointer {
-  cursor: pointer !important;
-}
-
 .cursor-default {
   cursor: default !important;
+}
+
+.cursor-pointer {
+  cursor: pointer !important;
 }
 
 .select-text {
@@ -1343,6 +1343,12 @@ html, body {
 .backdrop-filter {
   -webkit-backdrop-filter: var(--tw-backdrop-filter) !important;
           backdrop-filter: var(--tw-backdrop-filter) !important;
+}
+
+.transition-all {
+  transition-property: all !important;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transition-duration: 150ms !important;
 }
 
 .btn-primary {
