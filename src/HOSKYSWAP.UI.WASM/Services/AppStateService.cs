@@ -46,6 +46,39 @@ public class AppStateService : INotifyPropertyChanged
         }
     }
     
+    private decimal _totalFeesRugpulled = 0.000000m;
+    public decimal TotalFeesRugpulled
+    {
+        get => _totalFeesRugpulled;
+        set
+        {
+            _totalFeesRugpulled = value;
+            NotifyPropertyChanged();
+        }
+    }
+    
+    private List<Order>? _openBuyOrders = null;
+    public List<Order>? OpenBuyOrders
+    {
+        get => _openBuyOrders;
+        set
+        {
+            _openBuyOrders = value;
+            NotifyPropertyChanged();
+        }
+    }
+    
+    private List<Order>? _openSellOrders = null;
+    public List<Order>? OpenSellOrders
+    {
+        get => _openSellOrders;
+        set
+        {
+            _openSellOrders = value;
+            NotifyPropertyChanged();
+        }
+    }
+    
     private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")  
     {  
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

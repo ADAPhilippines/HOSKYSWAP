@@ -37,17 +37,13 @@ public partial class IndexBase : ComponentBase, IDisposable
     protected DialogOptions DialogOptions = new() {FullWidth = true, DisableBackdropClick = true};
     protected bool IsDialogVisible { get; set; }
     protected List<Order> OrderHistory { get; set; } = new List<Order>();
-    protected List<Order> OpenSellOrders { get; set; } = new List<Order>();
-    protected List<Order> OpenBuyOrders { get; set; } = new List<Order>();
     private string DidReadDialogStorageKey = "DidReadDialog";
     private string SwapAddress { get; set; } = "addr_test1vqc9ekv93a55g6m59ucceh8v83he3hyve6eawm79dczezsqn8cms9";
     private string HoskyUnit { get; set; } = "88672eaaf6f5c5fb59ffa5b978016207dbbf769014c6870d31adc4de484f534b59";
-    protected BackendService BackendService { get; set; } = new BackendService();
     protected bool IsDisclaimerDialogVisible { get; set; }
     protected bool IsGeneralDialogVisible { get; set; }
     protected bool IsGeneralActionVisible { get; set; }
     protected string GeneralDialogMessage { get; set; } = string.Empty;
-    protected decimal TotalRugpulledADA { get; set; }
 
     protected override void OnInitialized()
     {
@@ -77,8 +73,7 @@ public partial class IndexBase : ComponentBase, IDisposable
             {
                 CardanoWalletInteropService.Error += OnWalletError;
             }
-
-            TotalRugpulledADA = await BackendService.GetTotalFeesRugpulledAsync();
+            
             Console.WriteLine(AppStateService?.CurrentOrder);
             await InvokeAsync(StateHasChanged);
         }
