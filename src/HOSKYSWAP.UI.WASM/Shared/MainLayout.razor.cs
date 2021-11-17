@@ -28,20 +28,26 @@ public partial class MainLayout
     {
         while (true)
         {
-            await Task.WhenAll(
-                new Task(async () =>
+            var tasks = new List<Task>
+            {
+                Task.Run(async () =>
                 {
-                    if (CardanoWalletInteropService != null)
-                    {
-                        var buyOrders = BackendService?.GetOpenBuyOrdersByAddressAsync(await CardanoWalletInteropService.GetWalletAddressAsync());
-                        
-                    }
+                    if (CardanoWalletInteropService is null || AppStateService is null ||
+                        BackendService is null) return;
+
+                    var walletAddress = await CardanoWalletInteropService.GetWalletAddressAsync();
+
+                    if (walletAddress is null) return;
+
+                    var buyOrders = await BackendService.GetOpenBuyOrdersByAddressAsync(walletAddress);
+                    AppStateService.CurrentOrder = buyOrders?.FirstOrDefault();
                 }),
-                new Task(() =>
+                Task.Run(async () =>
                 {
-                    
                 })
-            );
+            };
+            
+            await Task.WhenAll(tasks);
             await Task.Delay(10000);
         }
     }
