@@ -1,10 +1,11 @@
+using System.ComponentModel;
 using HOSKYSWAP.UI.WASM.Services;
 using HOSKYSWAP.UI.WASM.Services.JSInterop;
 using Microsoft.AspNetCore.Components;
 
 namespace HOSKYSWAP.UI.WASM.Shared;
 
-public partial class MainLayout
+public partial class MainLayout: IDisposable
 {
     [Inject] protected CardanoWalletInteropService? CardanoWalletInteropService { get; set; }
     [Inject] protected HelperInteropService? HelperInteropService { get; set; }
@@ -13,6 +14,12 @@ public partial class MainLayout
     private string WalletAddress { get; set; } = string.Empty;
     private string UserIdenticon { get; set; } = string.Empty;
     private bool IsNamiWarningDialogVisible { get; set; } = false;
+    
+    protected override void OnInitialized()
+    {
+        if (AppStateService != null) AppStateService.PropertyChanged += OnAppStateChanged;
+        base.OnInitialized();
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -23,6 +30,8 @@ public partial class MainLayout
         }
         await base.OnAfterRenderAsync(firstRender);
     }
+    
+    private void OnAppStateChanged(object? sender, PropertyChangedEventArgs e) => StateHasChanged();
 
     private async Task StartDataPolling()
     {
@@ -41,6 +50,17 @@ public partial class MainLayout
 
                     var buyOrders = await BackendService.GetOpenBuyOrdersByAddressAsync(walletAddress);
                     AppStateService.CurrentOrder = buyOrders?.FirstOrDefault();
+                }),
+                Task.Run(async () =>
+                {
+                }),
+                Task.Run(async () =>
+                {
+                    if (BackendService is null || AppStateService is null) return;
+                    var rate = await BackendService.GetADAPriceAsync();
+                    
+                    if (rate is null) return;
+                    AppStateService.MarketCap = await BackendService.GetMarketCapAsync(rate.Cardano.USD);
                 }),
                 Task.Run(async () =>
                 {
@@ -116,5 +136,10 @@ public partial class MainLayout
             return await HelperInteropService.GenerateIdenticonAsync(WalletAddress);
         else
             return string.Empty;
+    }
+    
+    public void Dispose()
+    {
+        if (AppStateService != null) AppStateService.PropertyChanged += OnAppStateChanged;
     }
 }

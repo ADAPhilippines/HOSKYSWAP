@@ -34,6 +34,18 @@ public class AppStateService : INotifyPropertyChanged
         }
     }
 
+    private decimal _marketCap = 0m;
+    
+    public decimal MarketCap
+    {
+        get => _marketCap;
+        set
+        {
+            _marketCap = value;
+            NotifyPropertyChanged();
+        }
+    }
+    
     private decimal _totalFeesRugpulled = 0.000000m;
     public decimal TotalFeesRugpulled
     {
