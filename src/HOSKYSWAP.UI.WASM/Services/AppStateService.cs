@@ -117,6 +117,30 @@ public class AppStateService : INotifyPropertyChanged
             NotifyPropertyChanged();
         }
     }
+    
+    private decimal _dailyVolume = 0.00m;
+
+    public decimal DailyVolume
+    {
+        get => _dailyVolume;
+        set
+        {
+            _dailyVolume = value;
+            NotifyPropertyChanged();
+        }
+    }
+    
+    private decimal _adaToUsdRate = 0.00m;
+
+    public decimal AdaToUsdRate
+    {
+        get => _adaToUsdRate;
+        set
+        {
+            _adaToUsdRate = value;
+            NotifyPropertyChanged();
+        }
+    }
 
     private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
     {

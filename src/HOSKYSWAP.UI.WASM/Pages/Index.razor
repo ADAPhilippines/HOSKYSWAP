@@ -147,7 +147,6 @@
                                     {
                                         <td class="@(order.Action is "buy" ? "text-green-500" : "text-red-500") py-1 w-full uppercase">
                                             <MudTooltip Placement="Placement.Top" Text="@("price: " + order.Rate + " $ADA")">
-                                                <!---To add row price --->
                                                 @order.Action
                                             </MudTooltip>
                                         </td>
@@ -156,8 +155,7 @@
                                     {
                                         <td class="text-gray-600 py-1 w-full uppercase">
                                             <MudTooltip Placement="Placement.Top" Text="@("price: " + order.Rate + " $ADA")">
-                                                <!---To add row price --->
-                                                @order.Action
+                                                Cancel
                                             </MudTooltip>
                                         </td>
                                     }
