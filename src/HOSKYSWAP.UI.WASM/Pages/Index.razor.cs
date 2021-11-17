@@ -133,7 +133,15 @@ public partial class IndexBase : ComponentBase, IDisposable
         if (ToAmount > 0 && PriceAmount > 0)
         {
             if (FromToken == "ADA")
+            {
                 FromAmount = ToAmount * PriceAmount;
+                
+                var floor = Math.Floor(FromAmount);
+                var ceil = Math.Ceiling(FromAmount);
+
+                if (Math.Abs(FromAmount - floor) <= 0.000003m) FromAmount = floor;
+                if (Math.Abs(FromAmount - ceil) <= 0.000003m) FromAmount = ceil;
+            }
             else
                 FromAmount = (ulong)(ToAmount / PriceAmount);
         }

@@ -832,6 +832,29 @@ html, body {
   margin-right: 6px !important;
 }
 
+<<<<<<< HEAD
+=======
+.mb-2 {
+  margin-bottom: 0.5rem !important;
+}
+
+.mt-1 {
+  margin-top: 0.25rem !important;
+}
+
+.mb-24 {
+  margin-bottom: 6rem !important;
+}
+
+.mb-20 {
+  margin-bottom: 5rem !important;
+}
+
+.mt-3 {
+  margin-top: 0.75rem !important;
+}
+
+>>>>>>> ddde9566b3d508f32c3233abc005505bf68f18b1
 .inline {
   display: inline !important;
 }
@@ -1230,6 +1253,10 @@ html, body {
 
 .pt-\[6px\] {
   padding-top: 6px !important;
+}
+
+.pt-2 {
+  padding-top: 0.5rem !important;
 }
 
 .text-left {

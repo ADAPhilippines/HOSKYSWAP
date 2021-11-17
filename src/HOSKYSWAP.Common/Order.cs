@@ -7,7 +7,8 @@ public enum Status
     Cancelled,
     Error,
     Ignored,
-    Confirming
+    Confirming,
+    Cancelling
 }
 
 public record Order

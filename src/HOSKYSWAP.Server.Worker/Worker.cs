@@ -110,7 +110,6 @@ public class Worker : BackgroundService
                     await SyncTxConfirmationsAsync(stoppingToken);
                     await SyncNewOrdersAsync(stoppingToken);
                     await MatchOrdersAsync(stoppingToken);
-                    await Task.Delay(20000, stoppingToken);
                 }
             }
             catch (Exception ex)
@@ -127,7 +126,7 @@ public class Worker : BackgroundService
             var latestBlock = await _blockfrostBlockService.GetLatestAsync();
             var protocolParam = await _blockfrostEpochService.GetLatestParametersAsync();
 
-            var cancelledOrders = await _dbContext.Orders.Where(o => o.Status == Status.Cancelled).ToListAsync();
+            var cancelledOrders = await _dbContext.Orders.Where(o => o.Status == Status.Cancelling).ToListAsync();
             _logger.LogInformation("Cancel Orders: {0}", cancelledOrders.Count);
 
             foreach (var cancelledOrder in cancelledOrders)
@@ -136,7 +135,7 @@ public class Worker : BackgroundService
 
                 var ordersToCancel = await _dbContext.Orders.Where(o => o.Status == Status.Open && o.OwnerAddress == cancelledOrder.OwnerAddress).ToListAsync();
 
-                if(ordersToCancel.Count <=0)
+                if (ordersToCancel.Count <= 0)
                 {
                     _logger.LogInformation("Cancel Order Ignored: {0}", cancelledOrder.TxHash);
                     cancelledOrder.Status = Status.Ignored;
@@ -305,7 +304,7 @@ public class Worker : BackgroundService
                                 Action = string.Empty,
                                 Rate = 0,
                                 Total = 0,
-                                Status = Status.Cancelled,
+                                Status = Status.Cancelling,
                                 TxIndexes = siblingUtxos.Select(e => e.TxIndex).ToList(),
                                 ExecuteTxId = string.Empty
                             });
