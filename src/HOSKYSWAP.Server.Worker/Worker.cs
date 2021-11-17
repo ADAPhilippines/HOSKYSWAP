@@ -31,6 +31,7 @@ public class Worker : BackgroundService
     private ulong _marginOfErrorLovelace = 100;
     private string _blockfrostAPIKey { get; set; } = string.Empty;
     private string _blockfrostAPINetwork { get; set; } = string.Empty;
+    private string _changeWalletAddress { get; set; } = string.Empty;
     private ServiceProvider? _blockfrostServiceProvider { get; set; } = null;
     private IEpochsService? _blockfrostEpochService { get; set; } = null;
     private IBlocksService? _blockfrostBlockService { get; set; } = null;
@@ -59,6 +60,7 @@ public class Worker : BackgroundService
         _blockfrostTransactionsService = _blockfrostServiceProvider.GetService<ITransactionsService>();
         _blockfrostAddressService = _blockfrostServiceProvider.GetService<IAddressesService>();
         _marginOfErrorLovelace = ulong.Parse(_config["MarginOfErrorLovelace"]);
+        _changeWalletAddress = _config["ChangeWalletAddress"];
 
         // Initialization Procedures
         RestoreWalletFromSeed();
@@ -167,7 +169,7 @@ public class Worker : BackgroundService
                 }
 
                 transactionBody.AddOutput(new Address(cancelledOrder.OwnerAddress), 1000000);
-                transactionBody.AddOutput(_walletAddress, totalFee);
+                transactionBody.AddOutput(new Address(_changeWalletAddress), totalFee);
 
                 transactionBody
                 .SetTtl((uint)latestBlock.Slot + 1000)
@@ -537,7 +539,7 @@ public class Worker : BackgroundService
                 }
             }
 
-            transactionBody.AddOutput(_walletAddress, totalFee);
+            transactionBody.AddOutput(new Address(_changeWalletAddress), totalFee);
 
             transactionBody
                 .SetTtl((uint)latestBlock.Slot + 1000)
@@ -623,7 +625,7 @@ public class Worker : BackgroundService
                 var changeAssetDelta = changeAsset.Item3 - asset.Value.Item3;
                 if (changeAssetDelta > 0)
                 {
-                    transactionBody.AddOutput(_walletAddress, 2000000, TokenBundleBuilder.Create
+                    transactionBody.AddOutput(new Address(_changeWalletAddress), 2000000, TokenBundleBuilder.Create
                         .AddToken(asset.Value.Item1.HexToByteArray(), asset.Value.Item2.HexToByteArray(), changeAssetDelta));
                     totalLovelace -= 2000000;
                 }
@@ -643,11 +645,11 @@ public class Worker : BackgroundService
             {
                 var changeTokens = TokenBundleBuilder.Create;
                 utxoAssets.ForEach(e => changeTokens.AddToken(e.Item1, e.Item2, e.Item3));
-                transactionBody.AddOutput(_walletAddress, totalLovelace, changeTokens);
+                transactionBody.AddOutput(new Address(_changeWalletAddress), totalLovelace, changeTokens);
             }
             else if (totalLovelace > 1200000)
             {
-                transactionBody.AddOutput(_walletAddress, totalLovelace);
+                transactionBody.AddOutput(new Address(_changeWalletAddress), totalLovelace);
             }
             else if (totalLovelace > 0 && totalLovelace < 1200000)
             {
