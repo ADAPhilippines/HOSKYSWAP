@@ -30,7 +30,7 @@
                 <div class="text-white font-semibold inline">$HOSKY SWAP</div>
             </NavLink>
             <div class="text-white font-semibold"><span class="text-currency">1 $ADA</span> = <span class="text-currency">1,000,000 $HOSKY</span> </div>
-            <div class="text-white font-semibold"><span class="text-currency">@($"{AppStateService?.MarketCap:C}")</span> MARKETCAP</div>
+            <div class="text-white font-semibold"><span class="text-currency">@($"{AppStateService?.MarketCap:C0}")</span> MARKETCAP</div>
             @if (AppStateService?.IsWalletConnected ?? false)
             {
                 <div class="flex flex-row items-center">
