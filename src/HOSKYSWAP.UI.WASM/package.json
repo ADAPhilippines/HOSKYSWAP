@@ -7,7 +7,7 @@
     "build:css": "tailwindcss -i wwwroot/css/app.css -o wwwroot/dist/css/app.min.css",
     "watch:css": "tailwindcss -w -i wwwroot/css/app.css -o wwwroot/dist/css/app.min.css",
     "watch:scripts": "webpack watch --mode=development",
-    "build:scripts": "webpack --mode=development"
+    "build:scripts": "webpack --mode=production"
   },
   "keywords": [],
   "author": "",
