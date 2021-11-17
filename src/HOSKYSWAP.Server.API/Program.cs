@@ -60,7 +60,7 @@ app.MapGet("/order/{address}", async ([FromRoute] string address, HoskyDbContext
 {
 	if (dbContext.Orders is not null)
 	{
-		return await dbContext.Orders.Where(o => o.OwnerAddress == address && (o.Status == Status.Filled || o.Status == Status.Cancelled)).ToListAsync<Order>();
+		return await dbContext.Orders.Where(o => o.OwnerAddress == address && (o.Status == Status.Filled || o.Status == Status.Cancelled)).OrderByDescending(o => o.UpdatedAt).Take<Order>(100).ToListAsync<Order>();
 	}
 	else
 		throw new Exception("Server error occured. Please try again.");

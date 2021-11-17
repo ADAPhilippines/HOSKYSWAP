@@ -110,12 +110,7 @@ public partial class IndexBase : ComponentBase, IDisposable
             }
             else
             {
-                ToAmount = FromAmount * PriceAmount;
-                var floor = Math.Floor(ToAmount);
-                var ceil = Math.Ceiling(ToAmount);
-
-                if (Math.Abs(ToAmount - floor) <= 0.000003m) ToAmount = floor;
-                if (Math.Abs(ToAmount - ceil) <= 0.000003m) ToAmount = ceil;
+                ToAmount = RoundAmount(FromAmount * PriceAmount);
             }
         }
         else
@@ -134,13 +129,7 @@ public partial class IndexBase : ComponentBase, IDisposable
         {
             if (FromToken == "ADA")
             {
-                FromAmount = ToAmount * PriceAmount;
-                
-                var floor = Math.Floor(FromAmount);
-                var ceil = Math.Ceiling(FromAmount);
-
-                if (Math.Abs(FromAmount - floor) <= 0.000003m) FromAmount = floor;
-                if (Math.Abs(FromAmount - ceil) <= 0.000003m) FromAmount = ceil;
+                FromAmount = RoundAmount(ToAmount * PriceAmount);
             }
             else
                 FromAmount = (ulong)(ToAmount / PriceAmount);
@@ -415,6 +404,17 @@ public partial class IndexBase : ComponentBase, IDisposable
             await SomethingWentWrongAsync();
             return null;
         }
+    }
+
+    protected decimal RoundAmount(decimal amt)
+    {
+        var floor = Math.Floor(amt);
+        var ceil = Math.Ceiling(amt);
+
+        if (Math.Abs(amt - floor) <= 0.000003m) amt = floor;
+        if (Math.Abs(amt - ceil) <= 0.000003m) amt = ceil;
+
+        return amt;
     }
 
     public void Dispose()
