@@ -111,7 +111,7 @@ class CardanoWalletInterop {
         try {
             const transactionHex = Buffer.from(transaction.to_bytes()).toString("hex");
             const witnesses = await window.cardano.signTx(transactionHex);
-            console.log("witness", witnesses);
+            
             const txWitnesses = transaction.witness_set();
             const txVkeys = txWitnesses.vkeys();
             const txScripts = txWitnesses.native_scripts();
@@ -156,12 +156,6 @@ class CardanoWalletInterop {
                 totalWitnesses,
                 transaction.auxiliary_data()
             );
-
-            const protocolParams = await this.GetProtocolParametersAsync();
-            let fee = CardanoWasmLoader.Cardano.min_fee(result, CardanoWasmLoader.Cardano.LinearFee.new(
-                CardanoWasmLoader.Cardano.BigNum.from_str(protocolParams.min_fee_a.toString()),
-                CardanoWasmLoader.Cardano.BigNum.from_str(protocolParams.min_fee_b.toString())));
-            console.log(fee.to_str());
         } catch (e: any) {
             console.error("Error in signing Tx:", e)
             let err: CardanoWalletInteropError = {
@@ -275,10 +269,8 @@ class CardanoWalletInterop {
                 CardanoWasmLoader.Cardano.BigNum.from_str(protocolParams.min_fee_a.toString()),
                 CardanoWasmLoader.Cardano.BigNum.from_str(protocolParams.min_fee_b.toString())));
 
-            console.log("before", fee.to_str());
             fee = fee.checked_add(CardanoWasmLoader.Cardano.BigNum.from_str("5000"));
             
-            console.log("after", fee.to_str());
             //subtract fee from initial changeValue
             changeValue = changeValue.checked_sub(CardanoWasmLoader.Cardano.Value.new(fee));
             
