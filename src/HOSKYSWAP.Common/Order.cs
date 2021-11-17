@@ -4,7 +4,7 @@ public enum Status
 {
     Open,
     Filled,
-    Canceled,
+    Cancelled,
     Error,
     Ignored,
     Confirming
