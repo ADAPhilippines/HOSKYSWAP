@@ -39,10 +39,7 @@ public partial class IndexBase : ComponentBase
             if (LocalStorage is not null)
             {
                 var didRead = await LocalStorage.GetItemAsync<bool?>(DidReadDialogStorageKey);
-                if (didRead is false or null)
-                {
-                    IsDialogVisible = true;
-                }
+                if (didRead is false or null) IsDialogVisible = true;
             }
 
             await InvokeAsync(StateHasChanged);
@@ -61,6 +58,11 @@ public partial class IndexBase : ComponentBase
             else
             {
                 ToAmount = FromAmount * PriceAmount;
+                var floor = Math.Floor(ToAmount);
+                var ceil = Math.Ceiling(ToAmount);
+
+                if (Math.Abs(ToAmount - floor) <= 3) ToAmount = floor;
+                if (Math.Abs(ToAmount - ceil) <= 3) ToAmount = ceil;
             }
         }
         else
@@ -127,6 +129,7 @@ public partial class IndexBase : ComponentBase
     {
         (FromToken, ToToken) = (ToToken, FromToken);
         (FromAmount, ToAmount) = (ToAmount, FromAmount);
+        OnFromAmountChange(FromAmount);
         ValidateForm();
         await InvokeAsync(StateHasChanged);
     }
