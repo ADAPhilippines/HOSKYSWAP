@@ -151,13 +151,17 @@
                                             </MudTooltip>
                                         </td>
                                     }
-                                    else
+                                    else if(order.Status is Status.Cancelled)
                                     {
                                         <td class="text-gray-600 py-1 w-full uppercase">
                                             <MudTooltip Placement="Placement.Top" Text="@("price: " + order.Rate + " $ADA")">
                                                 Cancel
                                             </MudTooltip>
                                         </td>
+                                    }
+                                    else
+                                    {
+                                        <td class="text-gray-600 py-1 w-full uppercase"></td>
                                     }
 
                                     <td class="py-1 w-full">
