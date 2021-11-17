@@ -168,26 +168,18 @@ class CardanoWalletInterop {
     }
 
     private async CreateNormalTx(output: TxOutput, metadata: string = ""): Promise<Transaction | null> {
-        await CardanoWalletInterop.EnsureCardanoWasmLoadedAsync();
         try {
-            let protocolParams = await this.GetProtocolParametersAsync();
-
-            const txBuilder = CardanoWasmLoader.Cardano.TransactionBuilder.new(
-                CardanoWasmLoader.Cardano.LinearFee.new(
-                    CardanoWasmLoader.Cardano.BigNum.from_str(protocolParams.min_fee_a.toString()),
-                    CardanoWasmLoader.Cardano.BigNum.from_str(protocolParams.min_fee_b.toString())),
-                CardanoWasmLoader.Cardano.BigNum.from_str(protocolParams.min_utxo.toString()),
-                CardanoWasmLoader.Cardano.BigNum.from_str(protocolParams.pool_deposit.toString()),
-                CardanoWasmLoader.Cardano.BigNum.from_str(protocolParams.key_deposit.toString()),
-                parseInt(protocolParams.max_val_size),
-                protocolParams.max_tx_size);
-
+            await CardanoWalletInterop.EnsureCardanoWasmLoadedAsync();
+            let changeValue = CardanoWasmLoader.Cardano.Value.new(CardanoWasmLoader.Cardano.BigNum.from_str("0"));
             const utxos = await CardanoWalletInterop.SelectUtxosAsync(output);
+            const inputs = CardanoWasmLoader.Cardano.TransactionInputs.new();
             utxos.forEach(utxo => {
-                txBuilder.add_input(
-                    utxo.output().address(),
-                    utxo.input(),
-                    utxo.output().amount());
+                inputs.add(CardanoWasmLoader.Cardano.TransactionInput.new(
+                    utxo.input().transaction_id(),
+                    utxo.input().index()
+                ));
+                
+                changeValue = changeValue.checked_add(utxo.output().amount());
             });
 
             const lovelaceAsset = output.amount.find((asset) => asset.unit === 'lovelace');
@@ -202,7 +194,6 @@ class CardanoWalletInterop {
                 const multiAsset = CardanoWasmLoader.Cardano.MultiAsset.new();
                 let asset = output.amount.find(asset => asset.unit !== 'lovelace');
                 if (asset) {
-
                     const assetsValue = CardanoWasmLoader.Cardano.Assets.new();
                     assetsValue.insert(
                         CardanoWasmLoader.Cardano.AssetName.new(Buffer.from(asset.unit.slice(56), 'hex')),
@@ -218,16 +209,26 @@ class CardanoWalletInterop {
                 outputValue.set_multiasset(multiAsset);
             }
 
-            txBuilder.add_output(
+            const rawOutputs = CardanoWasmLoader.Cardano.TransactionOutputs.new();
+            // sent to recipient
+            rawOutputs.add(
                 CardanoWasmLoader.Cardano.TransactionOutput.new(
                     CardanoWasmLoader.Cardano.Address.from_bech32(output.address),
                     outputValue
                 )
-            );
-
-            const latestBlock = await this.GetLatestBlockAsync();
-            txBuilder.set_ttl(latestBlock.slot + 1000);
-
+            )
+            changeValue = changeValue.checked_sub(outputValue);
+            
+            //handle change
+            const ownAddressHex = (await window.cardano.getUsedAddresses())[0];
+            const ownAddressBuffer = Buffer.from(ownAddressHex, "hex");
+            const ownAddress = CardanoWasmLoader.Cardano.Address.from_bytes(ownAddressBuffer);
+            rawOutputs.add(CardanoWasmLoader.Cardano.TransactionOutput.new(
+                ownAddress,
+                changeValue
+            ));
+            
+            //construct metadata
             let _metadata;
             if (Helper.IsJsonString(metadata)) {
                 //add metadata to the tx
@@ -239,36 +240,72 @@ class CardanoWalletInterop {
 
                 _metadata = CardanoWasmLoader.Cardano.AuxiliaryData.new();
                 _metadata.set_metadata(generalMetadata);
-
-                txBuilder.set_auxiliary_data(_metadata);
             }
-
-            //handle change
-            const addressHex = (await window.cardano.getUsedAddresses())[0];
-            const addressBuffer = Buffer.from(addressHex, "hex");
-            const address = CardanoWasmLoader.Cardano.Address.from_bytes(addressBuffer);
-            txBuilder.add_change_if_needed(address);
             
-            console.log(txBuilder.get_fee_if_set()?.to_str());
-            
-            const txBody = txBuilder.build();
+            //create dummy witness to account for in fees calculation
+            let dummyWitnesses = CardanoWasmLoader.Cardano.TransactionWitnessSet.new();
+            let vKeys = CardanoWasmLoader.Cardano.Vkeywitnesses.new();
+            vKeys.add(CardanoWasmLoader.Cardano.Vkeywitness.from_bytes(
+                Buffer.from("8258208814c250f40bfc74d6c64f02fc75a54e68a9a8b3736e408d9820a6093d5e38b95840f04a036fa56b180af6537b2bba79cec75191dc47419e1fd8a4a892e7d84b7195348b3989c15f1e7b895c5ccee65a1931615b4bdb8bbbd01e6170db7a6831310c","hex")
+            ));
+            dummyWitnesses.set_vkeys(vKeys);
 
-            const rawTx = CardanoWasmLoader.Cardano.Transaction.new(
-                txBody,
-                CardanoWasmLoader.Cardano.TransactionWitnessSet.new(),
-                _metadata ?? undefined
+            const protocolParams = await this.GetProtocolParametersAsync();
+            const latestBlock = await this.GetLatestBlockAsync();
+            const rawTxBody = CardanoWasmLoader.Cardano.TransactionBody.new(
+                inputs,
+                rawOutputs,
+                CardanoWasmLoader.Cardano.BigNum.from_str("0"),
+                latestBlock.slot + 1000
             );
             
-            const fee = CardanoWasmLoader.Cardano.min_fee(rawTx, CardanoWasmLoader.Cardano.LinearFee.new(
+            const rawTx = CardanoWasmLoader.Cardano.Transaction.new(
+                rawTxBody,
+                dummyWitnesses,
+                _metadata
+            );
+
+            let fee = CardanoWasmLoader.Cardano.min_fee(rawTx, CardanoWasmLoader.Cardano.LinearFee.new(
                 CardanoWasmLoader.Cardano.BigNum.from_str(protocolParams.min_fee_a.toString()),
                 CardanoWasmLoader.Cardano.BigNum.from_str(protocolParams.min_fee_b.toString())));
+            
+            //subtract fee from initial changeValue
+            changeValue = changeValue.checked_sub(CardanoWasmLoader.Cardano.Value.new(fee));
+            
+            //construct final output with fees considered
+            const finalOutputs = CardanoWasmLoader.Cardano.TransactionOutputs.new();
+            finalOutputs.add(
+                CardanoWasmLoader.Cardano.TransactionOutput.new(
+                    CardanoWasmLoader.Cardano.Address.from_bech32(output.address),
+                    outputValue
+                )
+            )
+            
+            finalOutputs.add(
+                CardanoWasmLoader.Cardano.TransactionOutput.new(
+                    ownAddress,
+                    changeValue
+                )
+            )
+            
+            //construct final transaction
+            const finalTxBody = CardanoWasmLoader.Cardano.TransactionBody.new(
+                inputs,
+                finalOutputs,
+                fee,
+                latestBlock.slot + 1000
+            );
+            
+            const finalTx = CardanoWasmLoader.Cardano.Transaction.new(
+                finalTxBody,
+                CardanoWasmLoader.Cardano.TransactionWitnessSet.new(),
+                _metadata
+            );
 
-            console.log(fee.to_str());
-
-            if (rawTx.to_bytes().length * 2 > protocolParams.max_tx_size)
+            if (finalTx.to_bytes().length * 2 > protocolParams.max_tx_size)
                 throw Error("Transaction is too big");
 
-            return rawTx;
+            return finalTx;
         } catch (e: any) {
             console.error("Error in Creating Tx:", e);
             let err: CardanoWalletInteropError = {
@@ -305,7 +342,7 @@ class CardanoWalletInterop {
                     .map(utxo => parseInt(utxo.output().amount().coin().to_str()))
                     .reduce((p, n) => p + n);
 
-                if (sum >= txOutput.amount[0].quantity + 1_000_000) break;
+                if (sum >= txOutput.amount[0].quantity + 1_500_000) break;
             }
         } else if (txOutput.amount.length > 1) {
             const asset = txOutput.amount.find(asset => asset.unit !== "lovelace");
@@ -346,7 +383,7 @@ class CardanoWalletInterop {
                         .map(utxo => parseInt(utxo.output().amount().coin().to_str()))
                         .reduce((p, n) => p + n);
 
-                    if (sumToken >= asset.quantity && sumLovelace >= (lovelace.quantity + 1_500_000 + 1_000_000)) break;
+                    if (sumToken >= asset.quantity && sumLovelace >= (lovelace.quantity + 1_500_000)) break;
                 }
             }
         }
