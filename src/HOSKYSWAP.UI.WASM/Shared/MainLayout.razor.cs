@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace HOSKYSWAP.UI.WASM.Shared;
 
-public partial class MainLayout: IDisposable
+public partial class MainLayout : IDisposable
 {
     [Inject] protected CardanoWalletInteropService? CardanoWalletInteropService { get; set; }
     [Inject] protected HelperInteropService? HelperInteropService { get; set; }
@@ -14,7 +14,16 @@ public partial class MainLayout: IDisposable
     private string WalletAddress { get; set; } = string.Empty;
     private string UserIdenticon { get; set; } = string.Empty;
     private bool IsNamiWarningDialogVisible { get; set; } = false;
-    
+
+    private ulong CurrentPrice
+    {
+        get
+        {
+            if (AppStateService?.LastExcecutedOrder is null) return 0;
+            return (ulong) (1 / AppStateService.LastExcecutedOrder.Rate);
+        }
+    }
+
     protected override void OnInitialized()
     {
         if (AppStateService != null) AppStateService.PropertyChanged += OnAppStateChanged;
@@ -28,9 +37,10 @@ public partial class MainLayout: IDisposable
             await SetAvatarAsync();
             _ = StartDataPolling();
         }
+
         await base.OnAfterRenderAsync(firstRender);
     }
-    
+
     private void OnAppStateChanged(object? sender, PropertyChangedEventArgs e) => StateHasChanged();
 
     private async Task StartDataPolling()
@@ -55,7 +65,7 @@ public partial class MainLayout: IDisposable
                 {
                     if (BackendService is null || AppStateService is null) return;
                     var rate = await BackendService.GetADAPriceAsync();
-                    
+
                     if (rate is null) return;
                     AppStateService.MarketCap = await BackendService.GetMarketCapAsync(rate.Cardano.USD);
                 }),
@@ -82,7 +92,7 @@ public partial class MainLayout: IDisposable
                     var walletAddress = await CardanoWalletInteropService.GetWalletAddressAsync();
 
                     if (walletAddress is null) return;
-                    
+
                     if (AppStateService is not null && BackendService is not null)
                         AppStateService.OrderHistory = await BackendService.GetOrderHistoryAsync(walletAddress);
                 }),
@@ -91,9 +101,13 @@ public partial class MainLayout: IDisposable
                     if (AppStateService is not null && BackendService is not null)
                         AppStateService.OpenOrderRatio = await BackendService.GetOpenOrderRatioAsync();
                 }),
-                
+                Task.Run(async () =>
+                {
+                    if (AppStateService is null || BackendService is null) return;
+                    AppStateService.LastExcecutedOrder = await BackendService.GetLastExecutedOrderAsync();
+                })
             };
-            
+
             await Task.WhenAll(tasks);
             await Task.Delay(10000);
         }
@@ -107,16 +121,19 @@ public partial class MainLayout: IDisposable
         }
         else
         {
-            if (CardanoWalletInteropService is null || await CardanoWalletInteropService.IsWalletConnectedAsync() || AppStateService is null) return;
+            if (CardanoWalletInteropService is null || await CardanoWalletInteropService.IsWalletConnectedAsync() ||
+                AppStateService is null) return;
             AppStateService.IsWalletConnected = await CardanoWalletInteropService.ConnectWalletAsync();
             await SetAvatarAsync();
         }
+
         await InvokeAsync(StateHasChanged);
     }
 
     private async Task SetAvatarAsync()
     {
-        if (CardanoWalletInteropService is not null && await CardanoWalletInteropService.IsWalletConnectedAsync() && AppStateService is not null)
+        if (CardanoWalletInteropService is not null && await CardanoWalletInteropService.IsWalletConnectedAsync() &&
+            AppStateService is not null)
         {
             AppStateService.IsWalletConnected = true;
             WalletAddress = await CardanoWalletInteropService.GetWalletAddressAsync() ?? String.Empty;
@@ -127,8 +144,8 @@ public partial class MainLayout: IDisposable
 
     private string FormatAddress()
     {
-        return WalletAddress.Length > 10 ? 
-            $"{WalletAddress.Substring(0,4)}...{WalletAddress[^8..]}"
+        return WalletAddress.Length > 10
+            ? $"{WalletAddress.Substring(0, 4)}...{WalletAddress[^8..]}"
             : WalletAddress;
     }
 
@@ -139,7 +156,7 @@ public partial class MainLayout: IDisposable
         else
             return string.Empty;
     }
-    
+
     public void Dispose()
     {
         if (AppStateService != null) AppStateService.PropertyChanged += OnAppStateChanged;

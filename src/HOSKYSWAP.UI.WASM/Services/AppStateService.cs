@@ -35,7 +35,7 @@ public class AppStateService : INotifyPropertyChanged
     }
 
     private decimal _marketCap = 0m;
-    
+
     public decimal MarketCap
     {
         get => _marketCap;
@@ -45,8 +45,9 @@ public class AppStateService : INotifyPropertyChanged
             NotifyPropertyChanged();
         }
     }
-    
+
     private decimal _totalFeesRugpulled = 0.000000m;
+
     public decimal TotalFeesRugpulled
     {
         get => _totalFeesRugpulled;
@@ -56,8 +57,9 @@ public class AppStateService : INotifyPropertyChanged
             NotifyPropertyChanged();
         }
     }
-    
+
     private List<Order>? _openBuyOrders = null;
+
     public List<Order>? OpenBuyOrders
     {
         get => _openBuyOrders;
@@ -67,8 +69,9 @@ public class AppStateService : INotifyPropertyChanged
             NotifyPropertyChanged();
         }
     }
-    
+
     private List<Order>? _openSellOrders = null;
+
     public List<Order>? OpenSellOrders
     {
         get => _openSellOrders;
@@ -78,8 +81,9 @@ public class AppStateService : INotifyPropertyChanged
             NotifyPropertyChanged();
         }
     }
-    
+
     private List<Order>? _orderHistory = null;
+
     public List<Order>? OrderHistory
     {
         get => _orderHistory;
@@ -89,8 +93,9 @@ public class AppStateService : INotifyPropertyChanged
             NotifyPropertyChanged();
         }
     }
-    
+
     private OpenOrderRatio? _openOrderRatio = null;
+
     public OpenOrderRatio? OpenOrderRatio
     {
         get => _openOrderRatio;
@@ -100,11 +105,23 @@ public class AppStateService : INotifyPropertyChanged
             NotifyPropertyChanged();
         }
     }
-    
-    private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")  
-    {  
+
+    private Order? _lastExcecutedOrder = null;
+
+    public Order? LastExcecutedOrder
+    {
+        get => _lastExcecutedOrder;
+        set
+        {
+            _lastExcecutedOrder = value;
+            NotifyPropertyChanged();
+        }
+    }
+
+    private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
+    {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }  
-    
+    }
+
     public event PropertyChangedEventHandler? PropertyChanged;
 }
