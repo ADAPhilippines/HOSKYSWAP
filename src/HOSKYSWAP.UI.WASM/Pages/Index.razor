@@ -4,152 +4,153 @@
 <PageTitle>$HOSKY SWAP</PageTitle>
 
 <MudTabs Class="max-w-base-content w-full backdrop-filter backdrop-blur-[5px] bg-transparent-dark text-white mt-12 rounded-lg">
-<MudTabPanel Icon="@Icons.Filled.Repeat" Text="Swap" Class="swap-tab">
-    @if (HasUnfilledOrder == false)
-    {
-        <div class="flex flex-col justify-center mt-4 p-4 pb-4">
-            <div>
-                <div class="font-semibold text-lg float-left">Swap</div>
-                <div class="font-semibold text-lg float-right">24H Volume</div>
-            </div>
-            <div>
-                <div class="float-left">Cardano network</div>
-                <div class="float-right text-currency">$103,909</div>
-            </div>
-            <div class="flex flex-col align-center gap-y-2 mt-4">
-                <div class="w-full">
-                    <div class="text-md">From:</div>
-                    <div class="flex flex-row w-full mt-2">
-                        <div class="mr-2 w-3/4 flex flex-col">
-                            <MudTextField Value="FromAmount" Placeholder="0.0" InputType="InputType.Number" Variant="Variant.Outlined" Margin="Margin.None" Class="hsky-textfield inline w-full font-semibold" T="decimal" ValueChanged="OnFromAmountChange" Immediate="true"></MudTextField>
-                            @if (DisplayFromError)
-                            {
-                                <div class="text-red-600 pt-[4px]">@FromErrorMessage</div>
-                            }
-                        </div>
-                        <MudSelect Value="FromToken" T="string" ValueChanged="OnFromTokenChanged" Variant="Variant.Outlined" Margin="Margin.None" OffsetY="true" Class="text-white inline hsky-select w-[125px]" Dense="true" PopoverClass="bg-dark-color text-white">
-                            <MudSelectItem Value="@("HOSKY")" Class="flex flex-row align-center">
-                                <img src="/images/hosky.webp" class="hsky-select-item-image "/><span class="inline text-xs font-semibold">HOSKY</span>
-                            </MudSelectItem>
-                            <MudSelectItem Value="@("ADA")">
-                                <img src="/images/cardano_logo_white.svg" class="hsky-select-item-image "/> <span class="inline text-xs font-semibold">ADA</span>
-                            </MudSelectItem>
-                        </MudSelect>
-                    </div>
-                </div>
-
-                <div class="w-full">
-                    <div class="text-md">Price:</div>
-                    <div class="w-full mt-2">
-                        <MudTextField Value="PriceAmount" T="decimal" ValueChanged="OnPriceAmountChange" Immediate="true" Placeholder="Enter Price" Variant="Variant.Outlined" Class="hsky-textfield mr-2 w-3/4 inline" AdornmentText="$ADA" Adornment="Adornment.End"></MudTextField>
-                    </div>
-                </div>
-
-                <div class="-mt-6">
-                    <MudIconButton Icon="@Icons.Filled.SwapVert" Class="text-white" Size="Size.Large" OnClick="OnSwapClicked"/>
-                </div>
-
-                <div class="w-full -mt-6">
-                    <div class="text-md">To:</div>
-                    <div class="flex flex-row w-full mt-2">
-                        <div class="mr-2 w-3/4 flex flex-col">
-                            <MudTextField Value="ToAmount" Placeholder="0.0" Immediate="true" InputType="InputType.Number" Variant="Variant.Outlined" Margin="Margin.None" Class="hsky-textfield inline font-semibold" T="decimal" ValueChanged="OnToAmountChange"></MudTextField>
-                            @if (DisplayToError)
-                            {
-                                <div class="text-red-600 pt-[4px]">@ToErrorMessage</div>
-                            }
-                        </div>
-                        <MudSelect Value="ToToken" T="string" ValueChanged="OnToTokenChanged" Variant="Variant.Outlined" Margin="Margin.None" OffsetY="true" Class="text-white inline hsky-select w-[125px]" Dense="true" PopoverClass="bg-dark-color text-white">
-                            <MudSelectItem Value="@("HOSKY")" Class="flex flex-row align-center">
-                                <img src="/images/hosky.webp" class="hsky-select-item-image "/><span class="inline text-xs font-semibold">HOSKY</span>
-                            </MudSelectItem>
-                            <MudSelectItem Value="@("ADA")">
-                                <img src="/images/cardano_logo_white.svg" class="hsky-select-item-image "/> <span class="inline text-xs font-semibold">ADA</span>
-                            </MudSelectItem>
-                        </MudSelect>
-                    </div>
-                </div>
-
+    <MudTabPanel Icon="@Icons.Filled.Repeat" Text="Swap" Class="swap-tab">
+        @if (HasUnfilledOrder == false)
+        {
+            <div class="flex flex-col justify-center mt-4 p-4 pb-4">
                 <div>
-                    Swap Fee: <span class="text-currency">0.69420 $ADA</span>
+                    <div class="font-semibold text-lg float-left">Swap</div>
+                    <div class="font-semibold text-lg float-right">24H Volume</div>
                 </div>
+                <div>
+                    <div class="float-left">Cardano network</div>
+                    <div class="float-right text-currency">$103,909</div>
+                </div>
+                <div class="flex flex-col align-center gap-y-2 mt-4">
+                    <div class="w-full">
+                        <div class="text-md">From:</div>
+                        <div class="flex flex-row w-full mt-2">
+                            <div class="mr-2 w-3/4 flex flex-col">
+                                <MudTextField Value="FromAmount" Placeholder="0.0" InputType="InputType.Number" Variant="Variant.Outlined" Margin="Margin.None" Class="hsky-textfield inline w-full font-semibold" T="decimal" ValueChanged="OnFromAmountChange" Immediate="true"></MudTextField>
+                                @if (DisplayFromError)
+                                {
+                                    <div class="text-red-600 pt-[4px]">@FromErrorMessage</div>
+                                }
+                            </div>
+                            <MudSelect Value="FromToken" T="string" ValueChanged="OnFromTokenChanged" Variant="Variant.Outlined" Margin="Margin.None" OffsetY="true" Class="text-white inline hsky-select w-[125px]" Dense="true" PopoverClass="bg-dark-color text-white">
+                                <MudSelectItem Value="@("HOSKY")" Class="flex flex-row align-center">
+                                    <img src="/images/hosky.webp" class="hsky-select-item-image "/><span class="inline text-xs font-semibold">HOSKY</span>
+                                </MudSelectItem>
+                                <MudSelectItem Value="@("ADA")">
+                                    <img src="/images/cardano_logo_white.svg" class="hsky-select-item-image "/> <span class="inline text-xs font-semibold">ADA</span>
+                                </MudSelectItem>
+                            </MudSelect>
+                        </div>
+                    </div>
 
-                <MudButton Disabled="GetShouldDisableSwapButton()" OnClick="OnSubmitSwapClicked" Class="text-sm bg-gradient-to-r from-aph-indigo to-aph-blue filter brightness-100 hover:brightness-125 text-white font-semibold rounded-lg p-3 normal-case w-full">
-                    <MudIcon Icon="@Icons.Filled.Repeat" Class="mr-2"/>
-                    <span>Swap</span>
+                    <div class="w-full">
+                        <div class="text-md">Price:</div>
+                        <div class="w-full mt-2">
+                            <MudTextField Value="PriceAmount" T="decimal" ValueChanged="OnPriceAmountChange" Immediate="true" Placeholder="Enter Price" Variant="Variant.Outlined" Class="hsky-textfield mr-2 w-3/4 inline" AdornmentText="$ADA" Adornment="Adornment.End"></MudTextField>
+                        </div>
+                    </div>
+
+                    <div class="-mt-6">
+                        <MudIconButton Icon="@Icons.Filled.SwapVert" Class="text-white" Size="Size.Large" OnClick="OnSwapClicked"/>
+                    </div>
+
+                    <div class="w-full -mt-6">
+                        <div class="text-md">To:</div>
+                        <div class="flex flex-row w-full mt-2">
+                            <div class="mr-2 w-3/4 flex flex-col">
+                                <MudTextField Value="ToAmount" Placeholder="0.0" Immediate="true" InputType="InputType.Number" Variant="Variant.Outlined" Margin="Margin.None" Class="hsky-textfield inline font-semibold" T="decimal" ValueChanged="OnToAmountChange"></MudTextField>
+                                @if (DisplayToError)
+                                {
+                                    <div class="text-red-600 pt-[4px]">@ToErrorMessage</div>
+                                }
+                            </div>
+                            <MudSelect Value="ToToken" T="string" ValueChanged="OnToTokenChanged" Variant="Variant.Outlined" Margin="Margin.None" OffsetY="true" Class="text-white inline hsky-select w-[125px]" Dense="true" PopoverClass="bg-dark-color text-white">
+                                <MudSelectItem Value="@("HOSKY")" Class="flex flex-row align-center">
+                                    <img src="/images/hosky.webp" class="hsky-select-item-image "/><span class="inline text-xs font-semibold">HOSKY</span>
+                                </MudSelectItem>
+                                <MudSelectItem Value="@("ADA")">
+                                    <img src="/images/cardano_logo_white.svg" class="hsky-select-item-image "/> <span class="inline text-xs font-semibold">ADA</span>
+                                </MudSelectItem>
+                            </MudSelect>
+                        </div>
+                    </div>
+
+                    <div>
+                        <span>Swap Fee:</span>
+                        <span class="text-currency">0.694200 $ADA</span>
+                    </div>
+
+                    <MudButton Disabled="GetShouldDisableSwapButton()" OnClick="OnSubmitSwapClicked" Class="text-sm bg-gradient-to-r from-aph-indigo to-aph-blue filter brightness-100 hover:brightness-125 text-white font-semibold rounded-lg p-3 normal-case w-full">
+                        <MudIcon Icon="@Icons.Filled.Repeat" Class="mr-2"/>
+                        <span>Swap</span>
+                    </MudButton>
+
+                    <div class="w-full text-right mt-2">
+                        <span>Total Fees Rugpulled: </span>
+                        <span class="text-currency">2.3483 $ADA</span>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="flex flex-col justify-end pt-4 px-4 h-[504px] mt-4">
+                <div class="flex flex-row w-full justify-center align-center gap-x-8">
+                    <img src="/images/cardano_logo_white.svg" alt="Cardano" class="h-[100px] w-[100px]"/>
+                    <MudIcon Icon="@Icons.Filled.Refresh" Class="text-white animate-spin" Size="Size.Large"/>
+                    <img src="/images/hosky.webp" class="h-[100px] w-[100px]" alt="HOSKY"/>
+                </div>
+                <div class="text-lg text-center mt-12 mb-28">
+                    You currently have a <span class="font-semibold uppercase">"Buy"</span> order,
+                    <br/>
+                    <span class="text-currency">1000 $ADA</span> @("@") <span class="text-currency">0.000001 $ADA</span> <span class="font-semibold">$ADA/$HOSKY</span>
+                </div>
+                <MudButton OnClick="OnCancelSwapClicked" Class="text-sm bg-gradient-to-r from-aph-indigo to-aph-blue filter brightness-100 hover:brightness-125 text-white font-semibold rounded-lg p-3 normal-case w-full mb-[53px]">
+                    <MudIcon Icon="@Icons.Filled.RemoveCircle" Class="mr-2"/> Cancel
                 </MudButton>
+            </div>
+        }
 
-                <div class="w-full text-right mt-2">
-                    <span>Total Fees Rugpulled: </span>
-                    <span class="text-currency">2.3483 $ADA</span>
+    </MudTabPanel>
+    <MudTabPanel Icon="@Icons.Filled.History" Text="History">
+        <div class="flex flex-col justify-start align-center mt-4 pb-[4px] h-[504px]">
+            <div class="font-semibold text-lg">Swap History</div>
+            <div class="flex flex-col w-full">
+                <div class="overflow-y-auto max-h-[450px] mt-4">
+                    <table class="table-fixed w-full">
+                        <tr>
+                            <th class="pb-2 w-1/2">Amount</th>
+                            <th class="pb-2 w-1/4">Action</th>
+                            <th class="pb-2 w-1/4">Date</th>
+                        </tr>
+                        @foreach (var order in OrderHistory)
+                        {
+                            <tr class="text-center cursor-pointer odd:bg-dark-color even:bg-row-color hover:selected-order">
+                                <td class="text-left pl-1 py-1 w-full">
+                                    <MudTooltip Placement="Placement.Top" Text="@("price: " + order.Rate)">
+                                        @if (order.Action is "buy")
+                                        {
+                                            <span>@order.Total $HOSKY</span>
+                                        }
+                                        else
+                                        {
+                                            <span>@(order.Total * order.Rate) $ADA</span>
+                                        }
+                                    </MudTooltip>
+                                </td>
+                                <td class="@(order.Action is "buy" ? "text-green-500" : "text-red-500") py-1 w-full uppercase">
+                                    <MudTooltip Placement="Placement.Top" Text="@("price: " + order.Rate)">
+                                        <!---To add row price --->
+                                        @order.Action
+                                    </MudTooltip>
+                                </td>
+                                <td class="py-1 w-full">
+                                    <MudTooltip Placement="Placement.Top" Text="@("price: " + order.Rate)">
+                                        @(order.UpdatedAt.ToString("MM/dd/yyyy"))
+                                    </MudTooltip>
+                                </td>
+                            </tr>
+                        }
+                    </table>
                 </div>
             </div>
         </div>
-    }
-    else
-    {
-        <div class="flex flex-col justify-end pt-4 px-4 h-[504px] mt-4">
-            <div class="flex flex-row w-full justify-center align-center gap-x-8">
-                <img src="/images/cardano_logo_white.svg" alt="Cardano" class="h-[100px] w-[100px]"/>
-                <MudIcon Icon="@Icons.Filled.Refresh" Class="text-white animate-spin" Size="Size.Large"/>
-                <img src="/images/hosky.webp" class="h-[100px] w-[100px]" alt="HOSKY"/>
-            </div>
-            <div class="text-lg text-center mt-12 mb-28">
-                You currently have a <span class="font-semibold uppercase">"Buy"</span> order,
-                <br/>
-                <span class="text-currency">1000 $ADA</span> @("@") <span class="text-currency">0.000001 $ADA</span> <span class="font-semibold">$ADA/$HOSKY</span>
-            </div>
-            <MudButton OnClick="OnCancelSwapClicked" Class="text-sm bg-gradient-to-r from-aph-indigo to-aph-blue filter brightness-100 hover:brightness-125 text-white font-semibold rounded-lg p-3 normal-case w-full mb-[53px]">
-                <MudIcon Icon="@Icons.Filled.RemoveCircle" Class="mr-2"/> Cancel
-            </MudButton>
-        </div>
-    }
-
-</MudTabPanel>
-<MudTabPanel Icon="@Icons.Filled.History" Text="History">
-    <div class="flex flex-col justify-start align-center mt-4 pb-[4px] h-[504px]">
-        <div class="font-semibold text-lg">Swap History</div>
-        <div class="flex flex-col w-full">
-            <div class="overflow-y-auto max-h-[450px] mt-4">
-                <table class="table-fixed w-full">
-                    <tr>
-                        <th class="pb-2 w-1/2">Amount</th>
-                        <th class="pb-2 w-1/4">Action</th>
-                        <th class="pb-2 w-1/4">Date</th>
-                    </tr>
-                    @foreach (var order in OrderHistory)
-                    {
-                        <tr class="text-center cursor-pointer odd:bg-dark-color even:bg-row-color hover:selected-order">
-                            <td class="text-left pl-1 py-1 w-full">
-                                <MudTooltip Placement="Placement.Top" Text="@("price:" + order.Rate)">
-                                    @if (order.Action is "buy")
-                                    {
-                                        <span>@order.Total $HOSKY</span>
-                                    }
-                                    else
-                                    {
-                                        <span>@(order.Total * order.Rate) $ADA</span>
-                                    }
-                                </MudTooltip>
-                            </td>
-                            <td class="@(order.Action is "buy" ? "text-green-500" : "text-red-500") py-1 w-full uppercase">
-                                <MudTooltip Placement="Placement.Top" Text="@("price:" + order.Rate)">
-                                    <!---To add row price --->
-                                    @order.Action
-                                </MudTooltip>
-                            </td>
-                            <td class="py-1 w-full">
-                                <MudTooltip Placement="Placement.Top" Text="@("price:" + order.Rate)">
-                                    @(order.UpdatedAt.ToString("MM/dd/yyyy"))
-                                </MudTooltip>
-                            </td>
-                        </tr>
-                    }
-                </table>
-            </div>
-        </div>
-    </div>
-</MudTabPanel>
+    </MudTabPanel>
 </MudTabs>
 
 <div class="flex flex-col">
@@ -171,11 +172,11 @@
                     <div class="font-semibold text-right">Price ($ADA)</div>
                 </div>
                 <div class="overflow-y-auto max-h-[300px] ">
-                    @for (var i = 0; i < 18; i++)
+                    @foreach (var buyOrder in OpenBuyOrders)
                     {
                         <div class="grid grid-cols-2 text-center p-2 cursor-pointer odd:bg-dark-color even:bg-row-color hover:selected-order">
-                            <div class="text-left">1,000,000,000,000 $HOSKY</div>
-                            <div class="text-green-500 text-right">1.937430 $ADA</div>
+                            <div class="text-left">@(buyOrder.Total) $HOSKY</div>
+                            <div class="text-green-500 text-right">@(buyOrder.Rate) $ADA</div>
                         </div>
                     }
                 </div>
@@ -189,11 +190,15 @@
                     <div class="font-semibold text-right">Amount: ($HOSKY)</div>
                 </div>
                 <div class="overflow-y-auto max-h-[300px] ">
-                    @for (var i = 0; i < 2; i++)
+                    @foreach (var sellOrder in OpenSellOrders)
                     {
                         <div class="grid grid-cols-2 text-center p-2 cursor-pointer odd:bg-dark-color even:bg-row-color hover:selected-order">
-                            <div class="text-red-500 text-left">1.937430 $ADA</div>
-                            <div class="text-right">1,000,000,000,000 $HOSKY</div>
+                            <div class="text-red-500 text-left">
+                                @(sellOrder.Rate) $ADA
+                            </div>
+                            <div class="text-right">
+                                @(sellOrder.Total) $HOSKY
+                            </div>
                         </div>
                     }
                 </div>
