@@ -44,6 +44,18 @@ public partial class MainLayout
                 }),
                 Task.Run(async () =>
                 {
+                    if (AppStateService is not null && BackendService is not null)
+                        AppStateService.TotalFeesRugpulled = await BackendService.GetTotalFeesRugpulledAsync();
+                }),
+                Task.Run(async () =>
+                {
+                    if (AppStateService is not null && BackendService is not null)
+                        AppStateService.OpenBuyOrders = await BackendService.GetOpenBuyOrdersAsync();
+                }),
+                Task.Run(async () =>
+                {
+                    if (AppStateService is not null && BackendService is not null)
+                        AppStateService.OpenSellOrders = await BackendService.GetOpenSellOrdersAsync();
                 })
             };
             
