@@ -66,8 +66,8 @@ public partial class IndexBase : ComponentBase
                 var floor = Math.Floor(ToAmount);
                 var ceil = Math.Ceiling(ToAmount);
 
-                if (Math.Abs(ToAmount - floor) <= 3) ToAmount = floor;
-                if (Math.Abs(ToAmount - ceil) <= 3) ToAmount = ceil;
+                if (Math.Abs(ToAmount - floor) <= 0.000003m) ToAmount = floor;
+                if (Math.Abs(ToAmount - ceil) <= 0.000003m) ToAmount = ceil;
             }
         }
         else
