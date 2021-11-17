@@ -86,6 +86,14 @@
     .mud-dialog .mud-dialog-actions {
         @apply justify-center;
     }
+    
+    .mud-tab.mud-tab-active {
+        @apply text-currency;
+    }
+    
+    .mud-tab-slider {
+        @apply bg-currency;
+    }
 }
 
 .btn-primary {

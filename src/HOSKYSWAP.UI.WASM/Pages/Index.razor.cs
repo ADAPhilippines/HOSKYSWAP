@@ -24,8 +24,8 @@ public partial class IndexBase : ComponentBase
     protected bool DisplayToError { get; set; }
     protected bool DisplayFromError { get; set; }
     protected string MinimumADAErrorMessage = "Minimum $ADA to swap is 5 $ADA.";
-    protected string WholeNumberADAErrorMessage = "$ADA must be a whole number.";
-    protected string WholeNumberHOSKYErrorMessage = "$HOSKY must be a whole number.";
+    protected string WholeNumberADAErrorMessage = "Total $ADA must be a whole number.";
+    protected string WholeNumberHOSKYErrorMessage = "Total $HOSKY must be a whole number.";
     protected string ToErrorMessage = string.Empty;
     protected string FromErrorMessage = string.Empty;
     protected bool HasUnfilledOrder { get; set; }
