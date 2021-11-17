@@ -2,7 +2,7 @@ import CardanoWasmLoader from "./Helpers/CardanoWasmLoader";
 import IDotNetObjectRef from "./Interfaces/IDotNetObjectRef";
 import CardanoWalletInteropErrorType from "./Enums/CardanoWalletInteropErrorType";
 import CardanoWalletInteropError from "./Types/CardanoWalletInteropError";
-import {Transaction, TransactionUnspentOutput} from "@emurgo/cardano-serialization-lib-browser";
+import {min_fee, Transaction, TransactionUnspentOutput} from "@emurgo/cardano-serialization-lib-browser";
 import {Buffer} from "Buffer";
 import Helper from "./Helpers/Helper";
 import TxOutput from "./Types/TxOutput";
@@ -248,7 +248,9 @@ class CardanoWalletInterop {
             const addressBuffer = Buffer.from(addressHex, "hex");
             const address = CardanoWasmLoader.Cardano.Address.from_bytes(addressBuffer);
             txBuilder.add_change_if_needed(address);
-
+            
+            console.log(txBuilder.get_fee_if_set()?.to_str());
+            
             const txBody = txBuilder.build();
 
             const rawTx = CardanoWasmLoader.Cardano.Transaction.new(
@@ -256,6 +258,12 @@ class CardanoWalletInterop {
                 CardanoWasmLoader.Cardano.TransactionWitnessSet.new(),
                 _metadata ?? undefined
             );
+            
+            const fee = CardanoWasmLoader.Cardano.min_fee(rawTx, CardanoWasmLoader.Cardano.LinearFee.new(
+                CardanoWasmLoader.Cardano.BigNum.from_str(protocolParams.min_fee_a.toString()),
+                CardanoWasmLoader.Cardano.BigNum.from_str(protocolParams.min_fee_b.toString())));
+
+            console.log(fee.to_str());
 
             if (rawTx.to_bytes().length * 2 > protocolParams.max_tx_size)
                 throw Error("Transaction is too big");
@@ -297,7 +305,7 @@ class CardanoWalletInterop {
                     .map(utxo => parseInt(utxo.output().amount().coin().to_str()))
                     .reduce((p, n) => p + n);
 
-                if (sum >= txOutput.amount[0].quantity) break;
+                if (sum >= txOutput.amount[0].quantity + 1_000_000) break;
             }
         } else if (txOutput.amount.length > 1) {
             const asset = txOutput.amount.find(asset => asset.unit !== "lovelace");
@@ -338,7 +346,7 @@ class CardanoWalletInterop {
                         .map(utxo => parseInt(utxo.output().amount().coin().to_str()))
                         .reduce((p, n) => p + n);
 
-                    if (sumToken >= asset.quantity && sumLovelace >= (lovelace.quantity + 1_500_000)) break;
+                    if (sumToken >= asset.quantity && sumLovelace >= (lovelace.quantity + 1_500_000 + 1_000_000)) break;
                 }
             }
         }

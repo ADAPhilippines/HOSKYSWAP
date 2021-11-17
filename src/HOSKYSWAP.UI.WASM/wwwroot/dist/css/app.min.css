@@ -808,6 +808,10 @@ html, body {
   margin-left: 24px !important;
 }
 
+.mb-2 {
+  margin-bottom: 0.5rem !important;
+}
+
 .mb-0 {
   margin-bottom: 0px !important;
 }
@@ -826,10 +830,6 @@ html, body {
 
 .mr-\[6px\] {
   margin-right: 6px !important;
-}
-
-.mb-2 {
-  margin-bottom: 0.5rem !important;
 }
 
 .inline {
