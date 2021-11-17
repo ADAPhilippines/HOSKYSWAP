@@ -88,4 +88,11 @@ public class BackendService
         return dailyVolumeUsd;
     }
     
+    public async Task<decimal> GetTotalFeesRugpulledAsync()
+    {
+        var rugpulledFeesResponse = await HttpClient.GetAsync("/order/total/rugpulled");
+        rugpulledFeesResponse.EnsureSuccessStatusCode();
+        
+        return await rugpulledFeesResponse.Content.ReadFromJsonAsync<decimal>();
+    }
 }
