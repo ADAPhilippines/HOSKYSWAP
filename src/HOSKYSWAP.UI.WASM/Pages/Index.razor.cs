@@ -254,8 +254,7 @@ public partial class IndexBase : ComponentBase
         await InvokeAsync(StateHasChanged);
         var tx = await CardanoWalletInteropService.GetTransactionAsync(txId);
         if (tx is not null)
-        {
-            HasUnfilledOrder = true;
+        { 
             IsGeneralDialogVisible = false;
             await InvokeAsync(StateHasChanged);
         }

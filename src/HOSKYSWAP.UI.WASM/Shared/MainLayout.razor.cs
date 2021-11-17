@@ -16,8 +16,19 @@ public partial class MainLayout
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
+        {
             await SetAvatarAsync();
+            _ = StartDataPolling();
+        }
         await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private async Task StartDataPolling()
+    {
+        while (true)
+        {
+            await Task.Delay(10000);
+        }
     }
 
     private async void OnConnectBtnClicked()
