@@ -14,6 +14,15 @@ public partial class MainLayout: IDisposable
     private string WalletAddress { get; set; } = string.Empty;
     private string UserIdenticon { get; set; } = string.Empty;
     private bool IsNamiWarningDialogVisible { get; set; } = false;
+
+    private ulong CurrentPrice
+    {
+        get
+        {
+            if (AppStateService?.LastExcecutedOrder is null) return 0;
+            return (ulong)(1 /AppStateService.LastExcecutedOrder.Rate);
+        }
+    }
     
     protected override void OnInitialized()
     {
@@ -85,8 +94,12 @@ public partial class MainLayout: IDisposable
                     
                     if (AppStateService is not null && BackendService is not null)
                         AppStateService.OrderHistory = await BackendService.GetOrderHistoryAsync(walletAddress);
+                }),
+                Task.Run(async () =>
+                {
+                    if (AppStateService is null || BackendService is null) return;
+                    AppStateService.LastExcecutedOrder = await BackendService.GetLastExecutedOrderAsync();
                 })
-                
             };
             
             await Task.WhenAll(tasks);

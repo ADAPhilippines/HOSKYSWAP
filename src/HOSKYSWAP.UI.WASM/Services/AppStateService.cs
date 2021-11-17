@@ -10,7 +10,6 @@ public class AppStateService : INotifyPropertyChanged
     public readonly DialogOptions DialogOptions = new() {FullWidth = true, DisableBackdropClick = true};
 
     private bool _isWalletConnected = false;
-
     public bool IsWalletConnected
     {
         get => _isWalletConnected;
@@ -23,7 +22,6 @@ public class AppStateService : INotifyPropertyChanged
     }
 
     private Order? _currentOrder = null;
-
     public Order? CurrentOrder
     {
         get => _currentOrder;
@@ -35,7 +33,6 @@ public class AppStateService : INotifyPropertyChanged
     }
 
     private decimal _marketCap = 0m;
-    
     public decimal MarketCap
     {
         get => _marketCap;
@@ -86,6 +83,17 @@ public class AppStateService : INotifyPropertyChanged
         set
         {
             _orderHistory = value;
+            NotifyPropertyChanged();
+        }
+    }
+    
+    private Order? _lastExcecutedOrder = null;
+    public Order? LastExcecutedOrder
+    {
+        get => _lastExcecutedOrder;
+        set
+        {
+            _lastExcecutedOrder = value;
             NotifyPropertyChanged();
         }
     }

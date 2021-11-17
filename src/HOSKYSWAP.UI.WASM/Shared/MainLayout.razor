@@ -29,7 +29,7 @@
                 <img class="h-[3rem] w-[3rem] inline mr-[5px]" src="images/hosky.webp" alt="Hosky">
                 <div class="text-white font-semibold inline">$HOSKY SWAP</div>
             </NavLink>
-            <div class="text-white font-semibold"><span class="text-currency">1 $ADA</span> = <span class="text-currency">1,000,000 $HOSKY</span> </div>
+            <div class="text-white font-semibold"><span class="text-currency">1 $ADA</span> = <span class="text-currency">@($"{CurrentPrice:N0}") $HOSKY</span> </div>
             <div class="text-white font-semibold"><span class="text-currency">@($"{AppStateService?.MarketCap:C0}")</span> MARKETCAP</div>
             @if (AppStateService?.IsWalletConnected ?? false)
             {
