@@ -51,7 +51,10 @@ public partial class MainLayout : IDisposable
             {
                 Task.Run(async () =>
                 {
-                    if (CardanoWalletInteropService is null || AppStateService is null ||
+                    if (CardanoWalletInteropService is null || 
+                        !(await CardanoWalletInteropService.HasNamiAsync()) || 
+                        !(await CardanoWalletInteropService.IsWalletConnectedAsync()) || 
+                        AppStateService is null ||
                         BackendService is null) return;
 
                     var walletAddress = await CardanoWalletInteropService.GetWalletAddressAsync();
@@ -91,7 +94,10 @@ public partial class MainLayout : IDisposable
                 }),
                 Task.Run(async () =>
                 {
-                    if (CardanoWalletInteropService is null || AppStateService is null ||
+                    if (CardanoWalletInteropService is null || 
+                        !(await CardanoWalletInteropService.HasNamiAsync()) || 
+                        !(await CardanoWalletInteropService.IsWalletConnectedAsync()) || 
+                        AppStateService is null ||
                         BackendService is null) return;
 
                     var walletAddress = await CardanoWalletInteropService.GetWalletAddressAsync();
@@ -142,7 +148,9 @@ public partial class MainLayout : IDisposable
 
     private async Task SetAvatarAsync()
     {
-        if (CardanoWalletInteropService is not null && await CardanoWalletInteropService.IsWalletConnectedAsync() &&
+        if (CardanoWalletInteropService is not null && 
+            await CardanoWalletInteropService.HasNamiAsync() && 
+            await CardanoWalletInteropService.IsWalletConnectedAsync() &&
             AppStateService is not null)
         {
             AppStateService.IsWalletConnected = true;
