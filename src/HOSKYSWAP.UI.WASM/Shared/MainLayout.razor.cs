@@ -9,6 +9,7 @@ public partial class MainLayout
     [Inject] protected CardanoWalletInteropService? CardanoWalletInteropService { get; set; }
     [Inject] protected HelperInteropService? HelperInteropService { get; set; }
     [Inject] protected AppStateService? AppStateService { get; set; }
+    [Inject] protected BackendService? BackendService { get; set; }
     private string WalletAddress { get; set; } = string.Empty;
     private string UserIdenticon { get; set; } = string.Empty;
     private bool IsNamiWarningDialogVisible { get; set; } = false;
@@ -27,6 +28,20 @@ public partial class MainLayout
     {
         while (true)
         {
+            await Task.WhenAll(
+                new Task(async () =>
+                {
+                    if (CardanoWalletInteropService != null)
+                    {
+                        var buyOrders = BackendService?.GetOpenBuyOrdersByAddressAsync(await CardanoWalletInteropService.GetWalletAddressAsync());
+                        
+                    }
+                }),
+                new Task(() =>
+                {
+                    
+                })
+            );
             await Task.Delay(10000);
         }
     }

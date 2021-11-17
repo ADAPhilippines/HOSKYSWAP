@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using HOSKYSWAP.Common;
 using MudBlazor;
 
 namespace HOSKYSWAP.UI.WASM.Services;
@@ -17,6 +18,18 @@ public class AppStateService : INotifyPropertyChanged
         set
         {
             _isWalletConnected = value;
+            NotifyPropertyChanged();
+        }
+    }
+
+    private Order? _currentOrder = null;
+
+    public Order? CurrentOrder
+    {
+        get => _currentOrder;
+        set
+        {
+            _currentOrder = value;
             NotifyPropertyChanged();
         }
     }

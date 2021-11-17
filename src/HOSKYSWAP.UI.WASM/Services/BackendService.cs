@@ -58,6 +58,14 @@ public class BackendService
         return orderHistory;
     }
 
+    public async Task<List<Order>?> GetOpenBuyOrdersByAddressAsync(string? address)
+    {
+        var orderResponse = await HttpClient.GetAsync($"/order/{address}/open");
+        orderResponse.EnsureSuccessStatusCode();
+        var openOrders = await orderResponse.Content.ReadFromJsonAsync<List<Order>>();
+        return openOrders;
+    }
+
     public async Task<OpenOrderRatio?> GetOpenOrderRatioAsync()
     {
         var orderResponse = await HttpClient.GetAsync("/order/open/ratio");
