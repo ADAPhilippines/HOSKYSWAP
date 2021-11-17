@@ -33,12 +33,13 @@ public class BackendService
         return lastOrder;
     }
 
-    public async Task<List<Order>?> GetOrderHistoryAsync(string address)
+    public async Task<List<Order>> GetOrderHistoryAsync(string address)
     {
-        var orderResponse = await HttpClient.GetAsync("/order/last/" + address);
+        var orderResponse = await HttpClient.GetAsync("/order/" + address);
         orderResponse.EnsureSuccessStatusCode();
         var orderHistory = await orderResponse.Content.ReadFromJsonAsync<List<Order>>();
-        return orderHistory;
+        if (orderHistory is not null) return orderHistory;
+        return new List<Order>();
     }
 
     public async Task<List<Order>?> GetOpenSellOrdersAsync()
@@ -65,26 +66,24 @@ public class BackendService
         return orderRatio;
     }
 
-    public async Task<decimal> GetMarketCapAsync()
+    public async Task<decimal> GetMarketCapAsync(decimal adaUsdRate)
     {
         var lastOrder = await GetLastExecutedOrderAsync();
-        var price = await GetADAPriceAsync();
         var totalHOSKY = 1_000_000_000_000_000;
 
-        if (lastOrder != null && price != null) return totalHOSKY * lastOrder.Rate * price.Cardano.USD;
+        if (lastOrder != null) return totalHOSKY * lastOrder.Rate * adaUsdRate;
         return 0;
     }
     
-    public async Task<decimal> GetDailyVolumeAsync()
+    public async Task<decimal> GetDailyVolumeAsync(decimal adaUsdRate)
     {
         var dailyVolumeUsd = 0m;
-        var price = await GetADAPriceAsync();
         var dailyVolumeResponse = await HttpClient.GetAsync("/market/daily/volume");
         dailyVolumeResponse.EnsureSuccessStatusCode();
         
         var dailyVolume = await dailyVolumeResponse.Content.ReadFromJsonAsync<Volume>();
 
-        if (dailyVolume is not null && price is not null) dailyVolumeUsd = dailyVolume.Amount * price.Cardano.USD;
+        if (dailyVolume is not null) dailyVolumeUsd = dailyVolume.Amount * adaUsdRate;
             
         return dailyVolumeUsd;
     }

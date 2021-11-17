@@ -1303,11 +1303,6 @@ html, body {
   color: rgba(16, 185, 129, var(--tw-text-opacity)) !important;
 }
 
-.text-gray-500 {
-  --tw-text-opacity: 1 !important;
-  color: rgba(107, 114, 128, var(--tw-text-opacity)) !important;
-}
-
 .text-red-500 {
   --tw-text-opacity: 1 !important;
   color: rgba(239, 68, 68, var(--tw-text-opacity)) !important;
