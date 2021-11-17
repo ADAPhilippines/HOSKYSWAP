@@ -14,7 +14,7 @@ using MudBlazor;
 
 namespace HOSKYSWAP.UI.WASM.Pages;
 
-public partial class IndexBase : ComponentBase
+public partial class IndexBase : ComponentBase, IDisposable
 {
     [Inject] protected CardanoWalletInteropService? CardanoWalletInteropService { get; set; }
     [Inject] protected ILocalStorageService? LocalStorage { get; set; }
@@ -389,5 +389,10 @@ public partial class IndexBase : ComponentBase
         {
             action = "cancel"
         }));
+    }
+
+    public void Dispose()
+    {
+        if (AppStateService != null) AppStateService.PropertyChanged += OnAppStateChanged;
     }
 }

@@ -33,6 +33,18 @@ public class AppStateService : INotifyPropertyChanged
             NotifyPropertyChanged();
         }
     }
+
+    private decimal _marketCap = 0m;
+    
+    public decimal MarketCap
+    {
+        get => _marketCap;
+        set
+        {
+            _marketCap = value;
+            NotifyPropertyChanged();
+        }
+    }
     
     private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")  
     {  
