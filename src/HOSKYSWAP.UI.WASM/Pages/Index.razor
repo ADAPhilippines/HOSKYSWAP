@@ -75,11 +75,13 @@
                     </div>
 
                     <MudButton Disabled="GetShouldDisableSwapButton()" OnClick="OnSubmitSwapClicked" Class="text-sm bg-gradient-to-r from-aph-indigo to-aph-blue filter brightness-100 hover:brightness-125 text-white font-semibold rounded-lg p-3 normal-case w-full">
-                        <MudIcon Icon="@Icons.Filled.Repeat" Class="mr-2"/> Swap
+                        <MudIcon Icon="@Icons.Filled.Repeat" Class="mr-2"/>
+                        <span>Swap</span>
                     </MudButton>
 
                     <div class="w-full text-right mt-2">
-                        Total Fees Rugpulled: <span class="text-currency">2.3483 $ADA</span>
+                        <span>Total Fees Rugpulled: </span>
+                        <span class="text-currency">2.3483 $ADA</span>
                     </div>
                 </div>
             </div>
@@ -234,11 +236,11 @@
 </div>
 
 
-<MudDialog @bind-IsVisible="IsDialogVisible" Options="@DialogOptions">
+<MudDialog @bind-IsVisible="IsDisclaimerDialogVisible" Options="@AppStateService?.DialogOptions">
     <TitleContent>
         <div class="flex flex-row align-center">
             <MudIcon Icon="@Icons.Material.Filled.Warning" Class="mr-3 text-white" Size="Size.Large"/>
-            <div class="text-xl font-semibold"> ATTENTION</div>
+            <div class="text-xl font-semibold">ATTENTION</div>
         </div>
 
     </TitleContent>
@@ -251,5 +253,24 @@
     </DialogContent>
     <DialogActions>
         <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="OnCloseDialog" Class="px-10 font-semibold">I am stupid and I will proceed.</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+<MudDialog @bind-IsVisible="IsGeneralDialogVisible" Options="@AppStateService?.DialogOptions">
+    <TitleContent>
+        <div class="flex flex-row align-center">
+            <MudIcon Icon="@Icons.Material.Filled.Info" Class="mr-3 text-white" Size="Size.Large"/>
+            <div class="text-xl font-semibold">Status</div>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <p>@GeneralDialogMessage</p>
+    </DialogContent>
+    <DialogActions>
+        @if (IsGeneralActionVisible)
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Success" Class="px-10 font-semibold mb-2" OnClick="HideGeneralDialog">OK</MudButton>
+        }
     </DialogActions>
 </MudDialog>

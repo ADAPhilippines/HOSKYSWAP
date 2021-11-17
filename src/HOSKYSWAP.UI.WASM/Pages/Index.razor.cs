@@ -1,9 +1,11 @@
+using System.ComponentModel;
 using System.Globalization;
 using System.Net.Http.Json;
 using System.Text.Json;
 using HOSKYSWAP.UI.WASM.Services.JSInterop;
 using Blazored.LocalStorage;
 using HOSKYSWAP.UI.WASM.Models;
+using HOSKYSWAP.UI.WASM.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
@@ -13,8 +15,9 @@ namespace HOSKYSWAP.UI.WASM.Pages;
 
 public partial class IndexBase : ComponentBase
 {
-    [Inject] private CardanoWalletInteropService? CardanoWalletInteropService { get; set; }
-    [Inject] private ILocalStorageService? LocalStorage { get; set; }
+    [Inject] protected CardanoWalletInteropService? CardanoWalletInteropService { get; set; }
+    [Inject] protected ILocalStorageService? LocalStorage { get; set; }
+    [Inject] protected AppStateService? AppStateService { get; set; }
     protected string ToToken { get; set; } = "HOSKY";
     protected string FromToken { get; set; } = "ADA";
     protected decimal FromAmount { get; set; } = 5m;
@@ -30,26 +33,61 @@ public partial class IndexBase : ComponentBase
     protected string ToErrorMessage = string.Empty;
     protected string FromErrorMessage = string.Empty;
     protected bool HasUnfilledOrder { get; set; }
-    protected DialogOptions DialogOptions = new() {FullWidth = true, DisableBackdropClick = true};
-    protected bool IsDialogVisible { get; set; }
+    protected bool IsDisclaimerDialogVisible { get; set; }
+    protected bool IsGeneralDialogVisible { get; set; }
+    protected bool IsGeneralActionVisible { get; set; }
+    protected string GeneralDialogMessage { get; set; } = string.Empty;
     private string DidReadDialogStorageKey = "DidReadDialog";
     private string SwapAddress { get; set; } = "addr_test1vqc9ekv93a55g6m59ucceh8v83he3hyve6eawm79dczezsqn8cms9";
     private string HoskyUnit { get; set; } = "88672eaaf6f5c5fb59ffa5b978016207dbbf769014c6870d31adc4de484f534b59";
-
     private HttpClient HttpClient { get; set; } = new HttpClient();
+
+    protected override void OnInitialized()
+    {
+        if (AppStateService != null) AppStateService.PropertyChanged += OnAppStateChanged;
+        base.OnInitialized();
+    }
+
+    protected void HideGeneralDialog()
+    {
+        IsGeneralActionVisible = false;
+        IsGeneralDialogVisible = false;
+    }
+
+    private void OnAppStateChanged(object? sender, PropertyChangedEventArgs e) => StateHasChanged();
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            // Check here
             if (LocalStorage is not null)
             {
                 var didRead = await LocalStorage.GetItemAsync<bool?>(DidReadDialogStorageKey);
-                if (didRead is false or null) IsDialogVisible = true;
+                if (didRead is false or null) IsDisclaimerDialogVisible = true;
+            }
+
+            if (CardanoWalletInteropService is not null)
+            {
+                CardanoWalletInteropService.Error += OnWalletError;
             }
 
             await GetADAPriceAsync();
             await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private void OnWalletError(object? sender, CardanoWalletInteropError e)
+    {
+        switch (e.Type)
+        {
+            case CardanoWalletInteropErrorType.SignTxError:
+                IsGeneralDialogVisible = true;
+                IsGeneralActionVisible = true;
+                GeneralDialogMessage = "Unable to sign transaction...";
+                StateHasChanged();
+                break;
+            default:
+                break;
         }
     }
 
@@ -187,19 +225,37 @@ public partial class IndexBase : ComponentBase
 
     protected async void OnSubmitSwapClicked(MouseEventArgs args)
     {
-        HasUnfilledOrder = true;
-
-        switch (FromToken)
-        {
-            case "ADA":
-                await BuyHoskyAsync();
-                break;
-            case "HOSKY":
-                await SellHoskyAsync();
-                break;
-        }
-
+        IsGeneralDialogVisible = true;
+        GeneralDialogMessage = "Submitting your order...";
         await InvokeAsync(StateHasChanged);
+        
+        var txId = FromToken switch
+        {
+            "ADA" => await BuyHoskyAsync(),
+            "HOSKY" => await SellHoskyAsync(),
+            _ => string.Empty
+        };
+
+        if (txId is not null && CardanoWalletInteropService is not null)
+        {
+            GeneralDialogMessage = $"Waiting for confirmation, TxID: {txId}";
+            await InvokeAsync(StateHasChanged);
+            var tx = await CardanoWalletInteropService.GetTransactionAsync(txId);
+            if (tx is not null)
+            {
+                HasUnfilledOrder = true;
+                IsGeneralDialogVisible = false;
+                await InvokeAsync(StateHasChanged);
+            }
+            else
+            {
+                await SomethingWentWrongAsync();
+            }
+        }
+        else
+        {
+            await SomethingWentWrongAsync();
+        }
     }
 
     protected async void OnCancelSwapClicked(MouseEventArgs args)
@@ -213,13 +269,13 @@ public partial class IndexBase : ComponentBase
 
     protected bool GetShouldDisableSwapButton()
     {
-        return DisplayFromError || DisplayToError;
+        return (DisplayFromError || DisplayToError) || (AppStateService is not null && !AppStateService.IsWalletConnected);
     }
 
     protected async void OnCloseDialog(MouseEventArgs args)
     {
         await Task.Delay(200);
-        IsDialogVisible = false;
+        IsDisclaimerDialogVisible = false;
         if (LocalStorage != null)
         {
             await LocalStorage.SetItemAsync(DidReadDialogStorageKey, true);
@@ -228,37 +284,50 @@ public partial class IndexBase : ComponentBase
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task BuyHoskyAsync()
+    private async Task<string?> BuyHoskyAsync()
     {
-        if (CardanoWalletInteropService is null) return;
-        var txId = await CardanoWalletInteropService.SendAssetsAsync(new TxOutput()
+        if (CardanoWalletInteropService is null) return null;
+        try
         {
-            Address = SwapAddress,
-            Amount = new List<Asset>
-            {
-                new Asset
+            var txId = await CardanoWalletInteropService.SendAssetsAsync(new TxOutput
                 {
-                    Unit = "lovelace",
-                    Quantity = (ulong)(FromAmount * 1_000_000) + 69_4200 
-                }
-            }
-        },
-        JsonSerializer.Serialize(new
+                    Address = SwapAddress,
+                    Amount = new List<Asset>
+                    {
+                        new Asset
+                        {
+                            Unit = "lovelace",
+                            Quantity = (ulong)(FromAmount * 1_000_000) + 69_4200 
+                        }
+                    }
+                },
+                JsonSerializer.Serialize(new
+                    {
+                        rate = PriceAmount.ToString(CultureInfo.InvariantCulture), 
+                        action = "buy"
+                    }
+                ));
+
+            return txId;
+        }
+        catch
         {
-            rate = PriceAmount.ToString(CultureInfo.InvariantCulture), 
-            action = "buy"
-        }));
-
-        if (txId is null) return;
-        var tx = await CardanoWalletInteropService.GetTransactionAsync(txId);
-
-        if (tx is null) return;
-        Console.WriteLine(tx.Hash);
+            await SomethingWentWrongAsync();
+            return null;
+        }
     }
 
-    private async Task SellHoskyAsync()
+    private async Task SomethingWentWrongAsync()
     {
-        if (CardanoWalletInteropService is null) return;
+        IsGeneralDialogVisible = true;
+        IsGeneralActionVisible = true;
+        GeneralDialogMessage = "Something went wrong, please try again.";
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task<string?> SellHoskyAsync()
+    {
+        if (CardanoWalletInteropService is null) return null;
         var txId = await CardanoWalletInteropService.SendAssetsAsync(new TxOutput()
         {
             Address = SwapAddress,
@@ -281,12 +350,8 @@ public partial class IndexBase : ComponentBase
             rate = PriceAmount.ToString(CultureInfo.InvariantCulture), 
             action = "sell"
         }));
-        
-        if (txId is null) return;
-        var tx = await CardanoWalletInteropService.GetTransactionAsync(txId);
 
-        if (tx is null) return;
-        Console.WriteLine(tx.Hash);
+        return txId;
     }
     
     private async Task CancelOrderAsync()
