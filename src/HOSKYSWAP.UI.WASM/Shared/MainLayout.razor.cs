@@ -53,9 +53,6 @@ public partial class MainLayout: IDisposable
                 }),
                 Task.Run(async () =>
                 {
-                }),
-                Task.Run(async () =>
-                {
                     if (BackendService is null || AppStateService is null) return;
                     var rate = await BackendService.GetADAPriceAsync();
                     
