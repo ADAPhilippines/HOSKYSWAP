@@ -8,7 +8,7 @@
     <MudTabPanel Icon="@Icons.Filled.Repeat" Text="Swap" Class="swap-tab">
         @if (AppStateService?.CurrentOrder is null)
         {
-            <div class="flex flex-col justify-center mt-4 p-4 pb-4">
+            <div class="flex flex-col justify-center mt-4 p-4 pb-4 cursor-default">
                 <div>
                     <div class="font-semibold text-lg float-left">Swap</div>
                     <div class="font-semibold text-lg float-right">24H Volume</div>
@@ -97,7 +97,7 @@
         }
         else
         {
-            <div class="flex flex-col justify-end pt-4 px-4 h-[504px] mt-4">
+            <div class="flex flex-col justify-end pt-4 px-4 h-[504px] mt-4 cursor-default">
                 <div class="flex flex-row w-full justify-center align-center gap-x-8">
                     <img src="/images/cardano_logo_white.svg" alt="Cardano" class="h-[100px] w-[100px]"/>
                     <MudIcon Icon="@Icons.Filled.Refresh" Class="text-white animate-spin" Size="Size.Large"/>
@@ -118,7 +118,7 @@
 
     </MudTabPanel>
     <MudTabPanel Icon="@Icons.Filled.History" Text="History">
-        <div class="flex flex-col justify-start align-center mt-4 pb-[4px] h-[504px]">
+        <div class="flex flex-col justify-start align-center mt-4 pb-[4px] h-[504px] cursor-default">
             <div class="font-semibold text-lg">Swap History</div>
             <div class="flex flex-col w-full">
                 <div class="overflow-y-auto max-h-[450px] mt-4">
@@ -192,7 +192,7 @@
         </MudCard>
     </div>
     <div class="flex flex-row w-full justify-center pb-8">
-        <MudCard Class="backdrop-filter backdrop-blur-[5px] bg-transparent-dark flex flex-col justify-start mt-4 text-white h-[400px] w-[400px] pb-[1px]">
+        <MudCard Class="backdrop-filter backdrop-blur-[5px] bg-transparent-dark flex flex-col justify-start mt-4 text-white h-[400px] w-[400px] pb-[1px] cursor-default">
             <div class="text-center font-semibold text-xl p-2 mt-4">Buy Order</div>
             <div class="flex flex-col">
                 <div class="grid grid-cols-2 gap-0 p-2">
@@ -213,7 +213,7 @@
                 </div>
             </div>
         </MudCard>
-        <MudCard Class="backdrop-filter backdrop-blur-[5px] bg-transparent-dark flex flex-col justify-start mt-4 text-white ml-4 h-[400px] w-[400px] pb-[1px]">
+        <MudCard Class="backdrop-filter backdrop-blur-[5px] bg-transparent-dark flex flex-col justify-start mt-4 text-white ml-4 h-[400px] w-[400px] pb-[1px] cursor-default">
             <div class="text-center font-semibold text-xl p-2 mt-4">Sell Order</div>
             <div class="flex flex-col">
                 <div class="grid grid-cols-2 gap-0 p-2">
