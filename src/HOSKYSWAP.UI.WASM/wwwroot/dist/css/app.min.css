@@ -996,6 +996,13 @@ html, body {
   cursor: default !important;
 }
 
+.select-none {
+  -webkit-user-select: none !important;
+     -moz-user-select: none !important;
+      -ms-user-select: none !important;
+          user-select: none !important;
+}
+
 .list-disc {
   list-style-type: disc !important;
 }
