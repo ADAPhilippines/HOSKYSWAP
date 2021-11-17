@@ -26,6 +26,7 @@ public partial class IndexBase : ComponentBase, IDisposable
     protected decimal PriceAmount { get; set; } = 0.000001m;
     protected double BuyRatioWidth { get; set; } = 70;
     protected double SellRatioWidth { get; set; } = 30;
+    protected const decimal ERROR_MARGIN = 100;
     protected bool DisplayToError { get; set; }
     protected bool DisplayFromError { get; set; }
     protected string MinimumADAErrorMessage = "Minimum $ADA to swap is 5 $ADA.";
@@ -33,9 +34,6 @@ public partial class IndexBase : ComponentBase, IDisposable
     protected string WholeNumberHOSKYErrorMessage = "Total $HOSKY must be a whole number.";
     protected string ToErrorMessage = string.Empty;
     protected string FromErrorMessage = string.Empty;
-    protected bool HasUnfilledOrder { get; set; }
-    protected DialogOptions DialogOptions = new() {FullWidth = true, DisableBackdropClick = true};
-    protected bool IsDialogVisible { get; set; }
     private string DidReadDialogStorageKey = "DidReadDialog";
     private string SwapAddress { get; set; } = "addr_test1vqc9ekv93a55g6m59ucceh8v83he3hyve6eawm79dczezsqn8cms9";
     private string HoskyUnit { get; set; } = "88672eaaf6f5c5fb59ffa5b978016207dbbf769014c6870d31adc4de484f534b59";
@@ -411,8 +409,8 @@ public partial class IndexBase : ComponentBase, IDisposable
         var floor = Math.Floor(amt);
         var ceil = Math.Ceiling(amt);
 
-        if (Math.Abs(amt - floor) <= 0.000003m) amt = floor;
-        if (Math.Abs(amt - ceil) <= 0.000003m) amt = ceil;
+        if (Math.Abs(amt - floor) <= ERROR_MARGIN) amt = floor;
+        if (Math.Abs(amt - ceil) <= ERROR_MARGIN) amt = ceil;
 
         return amt;
     }
