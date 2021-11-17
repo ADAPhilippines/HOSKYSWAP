@@ -14,7 +14,7 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
 builder.Services.AddScoped<CardanoWalletInteropService>();
 builder.Services.AddScoped<HelperInteropService>();
 builder.Services.AddScoped<AppStateService>();
-builder.Services.AddScoped<BackendService>();
+builder.Services.AddScoped<BackendService>(); 
 
 builder.Services.AddMudServices();
 await builder.Build().RunAsync();
