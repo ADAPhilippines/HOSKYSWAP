@@ -63,6 +63,11 @@ public partial class IndexBase : ComponentBase
             else
             {
                 ToAmount = FromAmount * PriceAmount;
+                var floor = Math.Floor(ToAmount);
+                var ceil = Math.Ceiling(ToAmount);
+
+                if (Math.Abs(ToAmount - floor) <= 0.000003m) ToAmount = floor;
+                if (Math.Abs(ToAmount - ceil) <= 0.000003m) ToAmount = ceil;
             }
         }
         else
@@ -129,6 +134,7 @@ public partial class IndexBase : ComponentBase
     {
         (FromToken, ToToken) = (ToToken, FromToken);
         (FromAmount, ToAmount) = (ToAmount, FromAmount);
+        OnFromAmountChange(FromAmount);
         ValidateForm();
         await InvokeAsync(StateHasChanged);
     }
