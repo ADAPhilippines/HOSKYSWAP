@@ -22,7 +22,7 @@ public partial class IndexBase : ComponentBase, IDisposable
     protected decimal PriceAmount { get; set; } = 0.000001m;
     protected double BuyRatioWidth { get; set; } = 70;
     protected double SellRatioWidth { get; set; } = 30;
-    protected const decimal ERROR_MARGIN = 100;
+    protected const decimal ERROR_MARGIN = 0.0001m;
     protected bool DisplayToError { get; set; }
     protected bool DisplayFromError { get; set; }
     protected string MinimumADAErrorMessage = "Minimum $ADA to swap is 5 $ADA.";
