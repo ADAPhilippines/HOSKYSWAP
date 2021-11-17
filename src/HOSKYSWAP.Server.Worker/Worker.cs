@@ -28,6 +28,7 @@ public class Worker : BackgroundService
     private string _assetName { get; set; } = string.Empty;
     private string _walletSeed { get; set; } = string.Empty;
     private ulong _swapFee { get; set; } = 694200;
+    private ulong _marginOfErrorLovelace = 100;
     private string _blockfrostAPIKey { get; set; } = string.Empty;
     private string _blockfrostAPINetwork { get; set; } = string.Empty;
     private ServiceProvider? _blockfrostServiceProvider { get; set; } = null;
@@ -57,6 +58,7 @@ public class Worker : BackgroundService
         _blockfrostBlockService = _blockfrostServiceProvider.GetService<IBlocksService>();
         _blockfrostTransactionsService = _blockfrostServiceProvider.GetService<ITransactionsService>();
         _blockfrostAddressService = _blockfrostServiceProvider.GetService<IAddressesService>();
+        _marginOfErrorLovelace = ulong.Parse(_config["MarginOfErrorLovelace"]);
 
         // Initialization Procedures
         RestoreWalletFromSeed();
@@ -424,7 +426,7 @@ public class Worker : BackgroundService
 
                     var matchOrder = openOrders.Where(e =>
                         e.Action == "sell" &&
-                        e.Rate == buyOrder.Rate && ulong.Parse((buyOrder.Total - (ulong)(e.Total * e.Rate * 1000000)).ToString().Replace("-", string.Empty)) < 3 &&
+                        e.Rate == buyOrder.Rate && ulong.Parse((buyOrder.Total - (ulong)(e.Total * e.Rate * 1000000)).ToString().Replace("-", string.Empty)) < _marginOfErrorLovelace &&
                         !consumedOrders.Any(e1 => e == e1)
                     ).FirstOrDefault();
 
@@ -442,7 +444,7 @@ public class Worker : BackgroundService
                     var matchOrder = openOrders.Where(e =>
                         e.Action == "buy" &&
                         e.Rate == sellOrder.Rate &&
-                        ulong.Parse((e.Total - (ulong)(sellOrder.Total * sellOrder.Rate * 1000000)).ToString().Replace("-", string.Empty)) < 3 &&
+                        ulong.Parse((e.Total - (ulong)(sellOrder.Total * sellOrder.Rate * 1000000)).ToString().Replace("-", string.Empty)) < _marginOfErrorLovelace &&
                         !consumedOrders.Any(e1 => e == e1)).FirstOrDefault();
 
                     if (sellOrder is not null && matchOrder is not null)
