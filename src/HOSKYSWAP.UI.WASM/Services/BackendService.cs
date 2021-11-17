@@ -77,6 +77,7 @@ public class BackendService
     public async Task<decimal> GetMarketCapAsync(decimal adaUsdRate)
     {
         var lastOrder = await GetLastExecutedOrderAsync();
+        
         var totalHOSKY = 1_000_000_000_000_000;
 
         if (lastOrder != null) return totalHOSKY * lastOrder.Rate * adaUsdRate;

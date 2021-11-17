@@ -10,7 +10,6 @@ public class AppStateService : INotifyPropertyChanged
     public readonly DialogOptions DialogOptions = new() {FullWidth = true, DisableBackdropClick = true};
 
     private bool _isWalletConnected = false;
-
     public bool IsWalletConnected
     {
         get => _isWalletConnected;
@@ -23,13 +22,78 @@ public class AppStateService : INotifyPropertyChanged
     }
 
     private Order? _currentOrder = null;
-
     public Order? CurrentOrder
     {
         get => _currentOrder;
         set
         {
             _currentOrder = value;
+            NotifyPropertyChanged();
+        }
+    }
+
+    private decimal _marketCap = 0m;
+    public decimal MarketCap
+    {
+        get => _marketCap;
+        set
+        {
+            _marketCap = value;
+            NotifyPropertyChanged();
+        }
+    }
+    
+    private decimal _totalFeesRugpulled = 0.000000m;
+    public decimal TotalFeesRugpulled
+    {
+        get => _totalFeesRugpulled;
+        set
+        {
+            _totalFeesRugpulled = value;
+            NotifyPropertyChanged();
+        }
+    }
+    
+    private List<Order>? _openBuyOrders = null;
+    public List<Order>? OpenBuyOrders
+    {
+        get => _openBuyOrders;
+        set
+        {
+            _openBuyOrders = value;
+            NotifyPropertyChanged();
+        }
+    }
+    
+    private List<Order>? _openSellOrders = null;
+    public List<Order>? OpenSellOrders
+    {
+        get => _openSellOrders;
+        set
+        {
+            _openSellOrders = value;
+            NotifyPropertyChanged();
+        }
+    }
+    
+    private List<Order>? _orderHistory = null;
+    public List<Order>? OrderHistory
+    {
+        get => _orderHistory;
+        set
+        {
+            _orderHistory = value;
+            NotifyPropertyChanged();
+        }
+    }
+    
+    private Order? _lastExcecutedOrder = null;
+    public Order? LastExcecutedOrder
+    {
+        get => _lastExcecutedOrder;
+        set
+        {
+            _lastExcecutedOrder = value;
             NotifyPropertyChanged();
         }
     }

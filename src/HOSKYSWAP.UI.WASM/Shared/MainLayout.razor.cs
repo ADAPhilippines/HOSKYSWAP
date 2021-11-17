@@ -1,10 +1,11 @@
+using System.ComponentModel;
 using HOSKYSWAP.UI.WASM.Services;
 using HOSKYSWAP.UI.WASM.Services.JSInterop;
 using Microsoft.AspNetCore.Components;
 
 namespace HOSKYSWAP.UI.WASM.Shared;
 
-public partial class MainLayout
+public partial class MainLayout: IDisposable
 {
     [Inject] protected CardanoWalletInteropService? CardanoWalletInteropService { get; set; }
     [Inject] protected HelperInteropService? HelperInteropService { get; set; }
@@ -13,6 +14,21 @@ public partial class MainLayout
     private string WalletAddress { get; set; } = string.Empty;
     private string UserIdenticon { get; set; } = string.Empty;
     private bool IsNamiWarningDialogVisible { get; set; } = false;
+
+    private ulong CurrentPrice
+    {
+        get
+        {
+            if (AppStateService?.LastExcecutedOrder is null) return 0;
+            return (ulong)(1 /AppStateService.LastExcecutedOrder.Rate);
+        }
+    }
+    
+    protected override void OnInitialized()
+    {
+        if (AppStateService != null) AppStateService.PropertyChanged += OnAppStateChanged;
+        base.OnInitialized();
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -23,6 +39,8 @@ public partial class MainLayout
         }
         await base.OnAfterRenderAsync(firstRender);
     }
+    
+    private void OnAppStateChanged(object? sender, PropertyChangedEventArgs e) => StateHasChanged();
 
     private async Task StartDataPolling()
     {
@@ -44,6 +62,43 @@ public partial class MainLayout
                 }),
                 Task.Run(async () =>
                 {
+                    if (BackendService is null || AppStateService is null) return;
+                    var rate = await BackendService.GetADAPriceAsync();
+                    
+                    if (rate is null) return;
+                    AppStateService.MarketCap = await BackendService.GetMarketCapAsync(rate.Cardano.USD);
+                }),
+                Task.Run(async () =>
+                {
+                    if (AppStateService is not null && BackendService is not null)
+                        AppStateService.TotalFeesRugpulled = await BackendService.GetTotalFeesRugpulledAsync();
+                }),
+                Task.Run(async () =>
+                {
+                    if (AppStateService is not null && BackendService is not null)
+                        AppStateService.OpenBuyOrders = await BackendService.GetOpenBuyOrdersAsync();
+                }),
+                Task.Run(async () =>
+                {
+                    if (AppStateService is not null && BackendService is not null)
+                        AppStateService.OpenSellOrders = await BackendService.GetOpenSellOrdersAsync();
+                }),
+                Task.Run(async () =>
+                {
+                    if (CardanoWalletInteropService is null || AppStateService is null ||
+                        BackendService is null) return;
+
+                    var walletAddress = await CardanoWalletInteropService.GetWalletAddressAsync();
+
+                    if (walletAddress is null) return;
+                    
+                    if (AppStateService is not null && BackendService is not null)
+                        AppStateService.OrderHistory = await BackendService.GetOrderHistoryAsync(walletAddress);
+                }),
+                Task.Run(async () =>
+                {
+                    if (AppStateService is null || BackendService is null) return;
+                    AppStateService.LastExcecutedOrder = await BackendService.GetLastExecutedOrderAsync();
                 })
             };
             
@@ -91,5 +146,10 @@ public partial class MainLayout
             return await HelperInteropService.GenerateIdenticonAsync(WalletAddress);
         else
             return string.Empty;
+    }
+    
+    public void Dispose()
+    {
+        if (AppStateService != null) AppStateService.PropertyChanged += OnAppStateChanged;
     }
 }
