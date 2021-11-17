@@ -3,7 +3,9 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using HOSKYSWAP.UI.WASM.Services.JSInterop;
 using Blazored.LocalStorage;
+using HOSKYSWAP.Common;
 using HOSKYSWAP.UI.WASM.Models;
+using HOSKYSWAP.UI.WASM.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
@@ -32,11 +34,12 @@ public partial class IndexBase : ComponentBase
     protected bool HasUnfilledOrder { get; set; }
     protected DialogOptions DialogOptions = new() {FullWidth = true, DisableBackdropClick = true};
     protected bool IsDialogVisible { get; set; }
+    protected List<Order> OrderHistory { get; set; } = new List<Order>();
     private string DidReadDialogStorageKey = "DidReadDialog";
     private string SwapAddress { get; set; } = "addr_test1vqc9ekv93a55g6m59ucceh8v83he3hyve6eawm79dczezsqn8cms9";
     private string HoskyUnit { get; set; } = "88672eaaf6f5c5fb59ffa5b978016207dbbf769014c6870d31adc4de484f534b59";
+    protected BackendService BackendService { get; set; } = new BackendService();
 
-    private HttpClient HttpClient { get; set; } = new HttpClient();
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -47,8 +50,7 @@ public partial class IndexBase : ComponentBase
                 var didRead = await LocalStorage.GetItemAsync<bool?>(DidReadDialogStorageKey);
                 if (didRead is false or null) IsDialogVisible = true;
             }
-
-            await GetADAPriceAsync();
+            
             await InvokeAsync(StateHasChanged);
         }
     }
@@ -308,13 +310,5 @@ public partial class IndexBase : ComponentBase
         {
             action = "cancel"
         }));
-    }
-
-    private async Task GetADAPriceAsync()
-    {
-        var adaPriceResponse = await HttpClient.GetAsync("https://api.coingecko.com/api/v3/simple/price?ids=cardano&vs_currencies=usd");
-        adaPriceResponse.EnsureSuccessStatusCode();
-        var adaPrice = await adaPriceResponse.Content.ReadFromJsonAsync<CardanoPrice>();
-        await InvokeAsync(StateHasChanged);
     }
 }

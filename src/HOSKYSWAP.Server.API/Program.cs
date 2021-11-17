@@ -103,12 +103,14 @@ app.MapGet("/order/open/ratio", async (HoskyDbContext dbContext) =>
 		decimal sellRatio = 0;
 		decimal buyRatio = 0;
 
-		if (totalOpenBuy > 0) buyRatio = (((decimal) totalOpenBuy / (decimal) total) * 100);
-		if (totalOpenSell > 0) sellRatio = (((decimal) totalOpenSell / (decimal) total) * 100);
-		
-		var result = new Dictionary<string, decimal>();
-		result.Add("sellRatio", sellRatio);
-		result.Add("buyRatio", buyRatio);
+		if (totalOpenBuy > 0) buyRatio = (((decimal)totalOpenBuy / (decimal)total) * 100);
+		if (totalOpenSell > 0) sellRatio = (((decimal)totalOpenSell / (decimal)total) * 100);
+
+		var result = new OpenOrderRatio
+		{
+			Sell = sellRatio,
+			Buy = buyRatio
+		};
 		return result;
 	}
 	else
@@ -122,13 +124,15 @@ app.MapGet("/market/daily/volume", async (HoskyDbContext dbContext) =>
 		var yesterday = DateTime.UtcNow.AddDays(-1);
 		var filledOrders = await dbContext.Orders.Where(o => o.Status == Status.Filled && o.UpdatedAt >= yesterday && o.Action.ToLower() == "buy").OrderBy(o => o.Rate).ToListAsync<Order>();
 		decimal totalAdaVolume = 0;
-		
+
 		filledOrders.ForEach(e => totalAdaVolume += (e.Total * e.Rate));
 		totalAdaVolume = totalAdaVolume * 2;
 
-		var result = new Dictionary<string, dynamic>();
-		result.Add("dailyVolume", totalAdaVolume);
-		result.Add("currency", "$ADA");
+		var result = new Volume
+		{
+			Amount = totalAdaVolume,
+			Currency = "$ADA"
+		};
 		return result;
 	}
 	else
