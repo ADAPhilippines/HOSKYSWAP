@@ -253,7 +253,7 @@ public partial class IndexBase : ComponentBase
         GeneralDialogMessage = $"Waiting for confirmation, TxID: {txId}";
         await InvokeAsync(StateHasChanged);
         var tx = await CardanoWalletInteropService.GetTransactionAsync(txId);
-        if (tx is not null)ß
+        if (tx is not null)
         {
             HasUnfilledOrder = true;
             IsGeneralDialogVisible = false;
