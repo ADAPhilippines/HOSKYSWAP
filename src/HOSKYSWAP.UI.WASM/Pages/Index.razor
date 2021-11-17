@@ -8,7 +8,7 @@
     <MudTabPanel Icon="@Icons.Filled.Repeat" Text="Swap" Class="swap-tab">
         @if (AppStateService?.CurrentOrder is null)
         {
-            <div class="flex flex-col justify-center mt-4 p-4 pb-4">
+            <div class="flex flex-col justify-center mt-4 p-4 pb-4 cursor-default">
                 <div>
                     <div class="font-semibold text-lg float-left">Swap</div>
                     <div class="font-semibold text-lg float-right">24H Volume</div>
@@ -97,7 +97,7 @@
         }
         else
         {
-            <div class="flex flex-col justify-end pt-4 px-4 h-[504px] mt-4">
+            <div class="flex flex-col justify-end pt-4 px-4 h-[504px] mt-4 cursor-default">
                 <div class="flex flex-row w-full justify-center align-center gap-x-8">
                     <img src="/images/cardano_logo_white.svg" alt="Cardano" class="h-[100px] w-[100px]"/>
                     <MudIcon Icon="@Icons.Filled.Refresh" Class="text-white animate-spin" Size="Size.Large"/>
@@ -105,18 +105,20 @@
                 </div>
                 <div class="text-lg text-center mt-12 mb-20">
                     <p>You currently have a <span class="font-semibold uppercase">"@AppStateService?.CurrentOrder.Action"</span> order,</p>
-                    <p><span class="text-currency">@(@AppStateService?.CurrentOrder.Action == "buy" ? @AppStateService?.CurrentOrder.Total / 1000000 : @AppStateService?.CurrentOrder.Total)  @(@AppStateService?.CurrentOrder.Action == "buy" ? "$ADA" : "$HOSKY")</span> @("@") <span class="text-currency">@AppStateService?.CurrentOrder.Rate $ADA</span> <span class="font-semibold">$ADA/$HOSKY</span></p>
+                    <p>
+                        <span class="text-currency">@(@AppStateService?.CurrentOrder.Action == "buy" ? @AppStateService?.CurrentOrder.Total / 1000000 : @AppStateService?.CurrentOrder.Total) @(@AppStateService?.CurrentOrder.Action == "buy" ? "$ADA" : "$HOSKY")</span> @("@") <span class="text-currency">@AppStateService?.CurrentOrder.Rate $ADA</span> <span class="font-semibold">$ADA/$HOSKY</span>
+                    </p>
                     <p class="font-bold text-red-500">DISCLAIMER: If you already cancelled, please just wait and don't press cancel again or else you will get rugpulled.</p>
                 </div>
                 <MudButton OnClick="OnCancelSwapClicked" Class="text-sm bg-gradient-to-r from-aph-indigo to-aph-blue filter brightness-100 hover:brightness-125 text-white font-semibold rounded-lg p-3 normal-case w-full mb-[53px]">
-                    <MudIcon Icon="@Icons.Filled.RemoveCircle" Class="mr-2"/> Cancel
+                    <MudIcon Icon="@Icons.Filled.RemoveCircle" Class="mr-2"/> <span>Cancel</span>
                 </MudButton>
             </div>
         }
 
     </MudTabPanel>
     <MudTabPanel Icon="@Icons.Filled.History" Text="History">
-        <div class="flex flex-col justify-start align-center mt-4 pb-[4px] h-[504px]">
+        <div class="flex flex-col justify-start align-center mt-4 pb-[4px] h-[504px] cursor-default">
             <div class="font-semibold text-lg">Swap History</div>
             <div class="flex flex-col w-full">
                 <div class="overflow-y-auto max-h-[450px] mt-4">
@@ -135,7 +137,7 @@
                                         <MudTooltip Placement="Placement.Top" Text="@("price: " + order.Rate + " $ADA")">
                                             @if (order.Action is "buy")
                                             {
-                                                <span>@order.Total $HOSKY</span>
+                                                <span>@((ulong)(order.Total / order.Rate / 1_000_000)) $HOSKY</span>
                                             }
                                             else
                                             {
@@ -151,7 +153,7 @@
                                             </MudTooltip>
                                         </td>
                                     }
-                                    else if(order.Status is Status.Cancelled)
+                                    else if (order.Status is Status.Cancelled)
                                     {
                                         <td class="text-gray-600 py-1 w-full uppercase">
                                             <MudTooltip Placement="Placement.Top" Text="@("price: " + order.Rate + " $ADA")">
@@ -172,7 +174,6 @@
                                 </tr>
                             }
                         }
-
                     </table>
                 </div>
             </div>
@@ -185,16 +186,13 @@
         <MudCard Class="backdrop-filter backdrop-blur-[5px] bg-transparent-dark flex flex-row justify-center mt-12 p-[4px] text-white w-full place-self-center">
             @if (AppStateService?.OpenOrderRatio is not null)
             {
-                <div class="bg-green-500 h-2 p-0" style="width:@AppStateService.OpenOrderRatio.Buy%">
-                </div>
-
-                <div class="bg-red-500 h-2 p-0" style="width:@AppStateService.OpenOrderRatio.Sell%">
-                </div>
+                <div class="bg-green-500 h-2 p-0 transition-all" style="width:@AppStateService.OpenOrderRatio.Buy%"></div>
+                <div class="bg-red-500 h-2 p-0 transition-all" style="width:@AppStateService.OpenOrderRatio.Sell%"></div>
             }
         </MudCard>
     </div>
     <div class="flex flex-row w-full justify-center pb-8">
-        <MudCard Class="backdrop-filter backdrop-blur-[5px] bg-transparent-dark flex flex-col justify-start mt-4 text-white h-[400px] w-[400px] pb-[1px]">
+        <MudCard Class="backdrop-filter backdrop-blur-[5px] bg-transparent-dark flex flex-col justify-start mt-4 text-white h-[400px] w-[400px] pb-[1px] cursor-default">
             <div class="text-center font-semibold text-xl p-2 mt-4">Buy Order</div>
             <div class="flex flex-col">
                 <div class="grid grid-cols-2 gap-0 p-2">
@@ -207,7 +205,7 @@
                         @foreach (var buyOrder in AppStateService.OpenBuyOrders)
                         {
                             <div class="grid grid-cols-2 text-center p-2 cursor-pointer odd:bg-dark-color even:bg-row-color hover:selected-order">
-                                <div class="text-left">@((ulong)(buyOrder.Total / buyOrder.Rate / 1_000_000)) $HOSKY</div>
+                                <div class="text-left">@((ulong) (buyOrder.Total / buyOrder.Rate / 1_000_000)) $HOSKY</div>
                                 <div class="text-green-500 text-right">@(buyOrder.Rate) $ADA</div>
                             </div>
                         }
@@ -215,7 +213,7 @@
                 </div>
             </div>
         </MudCard>
-        <MudCard Class="backdrop-filter backdrop-blur-[5px] bg-transparent-dark flex flex-col justify-start mt-4 text-white ml-4 h-[400px] w-[400px] pb-[1px]">
+        <MudCard Class="backdrop-filter backdrop-blur-[5px] bg-transparent-dark flex flex-col justify-start mt-4 text-white ml-4 h-[400px] w-[400px] pb-[1px] cursor-default">
             <div class="text-center font-semibold text-xl p-2 mt-4">Sell Order</div>
             <div class="flex flex-col">
                 <div class="grid grid-cols-2 gap-0 p-2">
@@ -253,13 +251,13 @@
 
     </TitleContent>
     <DialogContent>
-        <p class="text-base mb-2">This is a super legit ADA to HOKSY exchange!</p>
+        <p class="text-base mb-2"><span>This is a super dodgy </span><strong>ADA</strong> to <strong>HOSKY</strong><span> exchange!</span></p>
         <ul class="ml-[24px] list-disc text-base mb-1">
-            <li>Expect to get rug pulled anytime!</li>
-            <li>Only perfectly matched Buy/Sell pair is executed.</li>
-            <li>Only one(1) Buy/Sell Order is supported.</li>
-            <li>Only one(1) Buy/Sell Order is supported.</li>
-            <li>Only one(1) Buy/Sell Order is supported.</li>
+            <li>Expect to get rug pulled anytime in these premises.</li>
+            <li>We can't seem to get our math right. Trade only if you are an idiot.</li>
+            <li>We are running our servers on using a steam engine. Don't expect transactions to be fast.</li>
+            <li>Only total dumba**es put huge amount of ADA into this shady site.</li>
+            <li>Our system currently uses centralized dumb contracts. We will be downgrading into smart contracts in the future.</li>
         </ul>
     </DialogContent>
     <DialogActions>

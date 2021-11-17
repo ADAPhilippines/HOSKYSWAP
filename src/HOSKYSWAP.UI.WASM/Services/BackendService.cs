@@ -12,7 +12,7 @@ public class BackendService
     {
         HttpClient = new HttpClient
         {
-            BaseAddress = new Uri("http://localhost:5120")
+            BaseAddress = new Uri("https://hoskyswap-r9dc3.ondigitalocean.app")
         };
     }
 
