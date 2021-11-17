@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Net.Http.Json;
 using System.Text.Json;
 using HOSKYSWAP.UI.WASM.Services.JSInterop;
 using Blazored.LocalStorage;
@@ -47,6 +48,7 @@ public partial class IndexBase : ComponentBase
                 if (didRead is false or null) IsDialogVisible = true;
             }
 
+            await GetADAPriceAsync();
             await InvokeAsync(StateHasChanged);
         }
     }
@@ -306,5 +308,13 @@ public partial class IndexBase : ComponentBase
         {
             action = "cancel"
         }));
+    }
+
+    private async Task GetADAPriceAsync()
+    {
+        var adaPriceResponse = await HttpClient.GetAsync("https://api.coingecko.com/api/v3/simple/price?ids=cardano&vs_currencies=usd");
+        adaPriceResponse.EnsureSuccessStatusCode();
+        var adaPrice = await adaPriceResponse.Content.ReadFromJsonAsync<CardanoPrice>();
+        await InvokeAsync(StateHasChanged);
     }
 }

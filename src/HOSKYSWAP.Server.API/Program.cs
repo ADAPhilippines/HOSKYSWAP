@@ -49,7 +49,7 @@ app.MapGet("/order/last/execute", async (HoskyDbContext dbContext) =>
 {
 	if (dbContext.Orders is not null)
 	{
-		return await dbContext.Orders.Where(o => o.Status == Status.Open).OrderByDescending(o => o.CreatedAt).FirstOrDefaultAsync();
+		return await dbContext.Orders.Where(o => o.Status == Status.Filled).OrderByDescending(o => o.UpdatedAt).FirstOrDefaultAsync();
 	}
 	else
 		throw new Exception("Server error occured. Please try again.");
@@ -86,7 +86,7 @@ app.MapGet("/order/open/sell", async (HoskyDbContext dbContext) =>
 		throw new Exception("Server error occured. Please try again.");
 });
 
-app.MapGet("/order/filled/ratio", async (HoskyDbContext dbContext) =>
+app.MapGet("/order/open/ratio", async (HoskyDbContext dbContext) =>
 {
 	if (dbContext.Orders is not null)
 	{
@@ -119,10 +119,13 @@ app.MapGet("/market/daily/volume", async (HoskyDbContext dbContext) =>
 {
 	if (dbContext.Orders is not null)
 	{
-		var yesterday = DateTime.Now.AddDays(-1).ToUniversalTime();
-		var filledOrders = await dbContext.Orders.Where(o => o.Status == Status.Open && o.CreatedAt >= yesterday && o.Action.ToLower() == "buy").OrderBy(o => o.Rate).ToListAsync<Order>();
+		var yesterday = DateTime.UtcNow.AddDays(-1);
+		var filledOrders = await dbContext.Orders.Where(o => o.Status == Status.Filled && o.UpdatedAt >= yesterday && o.Action.ToLower() == "buy").OrderBy(o => o.Rate).ToListAsync<Order>();
 		decimal totalAdaVolume = 0;
-		filledOrders.ForEach(e => totalAdaVolume += (e.Total * e.Rate * 2));
+		
+		filledOrders.ForEach(e => totalAdaVolume += (e.Total * e.Rate));
+		totalAdaVolume = totalAdaVolume * 2;
+
 		var result = new Dictionary<string, dynamic>();
 		result.Add("dailyVolume", totalAdaVolume);
 		result.Add("currency", "$ADA");

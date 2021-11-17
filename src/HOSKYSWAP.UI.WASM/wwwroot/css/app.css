@@ -88,11 +88,11 @@
     }
     
     .mud-tab.mud-tab-active {
-        @apply text-currency;
+        @apply text-white;
     }
     
     .mud-tab-slider {
-        @apply bg-currency;
+        @apply bg-white;
     }
 }
 
