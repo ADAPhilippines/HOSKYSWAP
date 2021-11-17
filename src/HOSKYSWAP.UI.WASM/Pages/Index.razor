@@ -106,7 +106,7 @@
                 <div class="text-lg text-center mt-12 mb-20">
                     <p>You currently have a <span class="font-semibold uppercase">"@AppStateService?.CurrentOrder.Action"</span> order,</p>
                     <p><span class="text-currency">@(@AppStateService?.CurrentOrder.Action == "buy" ? @AppStateService?.CurrentOrder.Total / 1000000 : @AppStateService?.CurrentOrder.Total)  @(@AppStateService?.CurrentOrder.Action == "buy" ? "$ADA" : "$HOSKY")</span> @("@") <span class="text-currency">@AppStateService?.CurrentOrder.Rate $ADA</span> <span class="font-semibold">$ADA/$HOSKY</span></p>
-                    <p class="mt-4 font-bold text-red-500">DISCLAIMER: If you already cancelled, please just wait and don't press cancel again or else you will get rugpulled.</p>
+                    <p class="font-bold text-red-500">DISCLAIMER: If you already cancelled, please just wait and don't press cancel again or else you will get rugpulled.</p>
                 </div>
                 <MudButton OnClick="OnCancelSwapClicked" Class="text-sm bg-gradient-to-r from-aph-indigo to-aph-blue filter brightness-100 hover:brightness-125 text-white font-semibold rounded-lg p-3 normal-case w-full mb-[53px]">
                     <MudIcon Icon="@Icons.Filled.RemoveCircle" Class="mr-2"/> Cancel
