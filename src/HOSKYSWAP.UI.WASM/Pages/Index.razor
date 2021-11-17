@@ -1,4 +1,5 @@
 ﻿@namespace HOSKYSWAP.UI.WASM.Pages
+@using HOSKYSWAP.Common
 @inherits IndexBase
 @page "/"
 <PageTitle>$HOSKY SWAP</PageTitle>
@@ -131,7 +132,7 @@
                             {
                                 <tr class="text-center cursor-pointer odd:bg-dark-color even:bg-row-color hover:selected-order">
                                     <td class="text-left pl-1 py-1 w-full">
-                                        <MudTooltip Placement="Placement.Top" Text="@("price: " + order.Rate)">
+                                        <MudTooltip Placement="Placement.Top" Text="@("price: " + order.Rate + " $ADA")">
                                             @if (order.Action is "buy")
                                             {
                                                 <span>@order.Total $HOSKY</span>
@@ -142,14 +143,27 @@
                                             }
                                         </MudTooltip>
                                     </td>
-                                    <td class="@(order.Action is "buy" ? "text-green-500" : "text-red-500") py-1 w-full uppercase">
-                                        <MudTooltip Placement="Placement.Top" Text="@("price: " + order.Rate)">
-                                            <!---To add row price --->
-                                            @order.Action
-                                        </MudTooltip>
-                                    </td>
+                                    @if (order.Status is Status.Filled)
+                                    {
+                                        <td class="@(order.Action is "buy" ? "text-green-500" : "text-red-500") py-1 w-full uppercase">
+                                            <MudTooltip Placement="Placement.Top" Text="@("price: " + order.Rate + " $ADA")">
+                                                <!---To add row price --->
+                                                @order.Action
+                                            </MudTooltip>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td class="text-gray-600 py-1 w-full uppercase">
+                                            <MudTooltip Placement="Placement.Top" Text="@("price: " + order.Rate + " $ADA")">
+                                                <!---To add row price --->
+                                                @order.Action
+                                            </MudTooltip>
+                                        </td>
+                                    }
+
                                     <td class="py-1 w-full">
-                                        <MudTooltip Placement="Placement.Top" Text="@("price: " + order.Rate)">
+                                        <MudTooltip Placement="Placement.Top" Text="@("price: " + order.Rate + " $ADA")">
                                             @(order.UpdatedAt.ToString("MM/dd/yyyy"))
                                         </MudTooltip>
                                     </td>
