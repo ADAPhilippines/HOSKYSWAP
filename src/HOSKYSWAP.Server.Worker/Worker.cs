@@ -125,23 +125,31 @@ public class Worker : BackgroundService
         {
             var confirmingOrders = _dbContext.Orders.Where(o => o.Status == Status.Confirming).ToList();
             var uniqueTxHashes = confirmingOrders.Select(o => o.ExecuteTxId).Distinct().ToList();
-
+            _logger.LogInformation("Checking {0} Orders for confirmation", confirmingOrders.Count);
             foreach (var txHash in uniqueTxHashes)
             {
                 try
                 {
+                    _logger.LogInformation("Checking confirmation, TxHash: {0}", txHash);
                     var tx = await _blockfrostTransactionsService.GetAsync(txHash);
                     if (tx is not null)
                     {
-                        confirmingOrders.ForEach(e => {
+                        _logger.LogInformation("Confirmed, TxHash: {0}", txHash);
+                        confirmingOrders.ForEach(e =>
+                        {
                             e.Status = Status.Filled;
                             e.UpdatedAt = DateTime.UtcNow;
                         });
                         await _dbContext.SaveChangesAsync();
                     }
+                    else
+                    {
+                        _logger.LogInformation("Not yet confirmed, TxHash: {0}", txHash);
+                    }
                 }
                 catch
                 {
+                    _logger.LogInformation("Not yet confirmed, TxHash: {0}", txHash);
                     continue;
                 }
             }
@@ -153,6 +161,7 @@ public class Worker : BackgroundService
         if (_blockfrostAddressService is not null && _dbContext.Orders is not null && _blockfrostTransactionsService is not null)
         {
             var utxos = await GetWalletUTXOAsync();
+            _logger.LogInformation("Syncing {0} UTXOs", utxos.Count);
             foreach (var utxo in utxos)
             {
                 if (_dbContext.Orders.Any(e =>
@@ -164,6 +173,7 @@ public class Worker : BackgroundService
                 var siblingUtxos = utxos.Where(e => e.TxHash == utxo.TxHash);
                 if (txUtxos.Inputs.Where(e => e.Address == _walletAddressString).Any())
                 {
+                    _logger.LogInformation("Change detected, ignoring, TxHash: {0}", utxo.TxHash);
                     siblingUtxos.Select(e => e.TxIndex);
                     _dbContext.Orders.Add(new()
                     {
@@ -183,7 +193,7 @@ public class Worker : BackgroundService
                     var hoskySwapMeta = meta.Where(m => m.Label == "7283").FirstOrDefault();
                     if (hoskySwapMeta is null)
                     {
-                        _logger.LogInformation("No hosky swap meta found for tx {txHash}", utxo.TxHash);
+                        _logger.LogInformation("Order failed invalid metadata, TxHash: {0}", utxo.TxHash);
                         _dbContext.Orders.Add(new()
                         {
                             OwnerAddress = txUtxos.Inputs.First().Address,
@@ -224,7 +234,7 @@ public class Worker : BackgroundService
                                 if ((action == "buy" && totalQuantity >= 5000000 + 694200) ||
                                     (action == "sell" && totalLovelaceQuantity >= 1500000 + 694200 && totalQuantity * ((decimal)rate * 1000000) >= 4999997))
                                 {
-
+                                    _logger.LogInformation("New {0} Order Created, TxHash: {1}", action, utxo.TxHash);
                                     if (action == "buy") totalQuantity -= 694200;
                                     _dbContext.Orders.Add(new()
                                     {
@@ -240,6 +250,7 @@ public class Worker : BackgroundService
                                 }
                                 else
                                 {
+                                    _logger.LogInformation("Order failed invalid amount, TxHash: {0}", utxo.TxHash);
                                     _dbContext.Orders.Add(new()
                                     {
                                         OwnerAddress = txUtxos.Inputs.First().Address,
@@ -270,6 +281,7 @@ public class Worker : BackgroundService
                         }
                         else
                         {
+                            _logger.LogInformation("Order failed invalid metadata, TxHash: {0}", utxo.TxHash);
                             _dbContext.Orders.Add(new()
                             {
                                 OwnerAddress = txUtxos.Inputs.First().Address,
@@ -298,6 +310,8 @@ public class Worker : BackgroundService
                 .OrderBy(e => e.CreatedAt)
                 .ToListAsync();
 
+            _logger.LogInformation("Matching {0} Orders", openOrders.Count);
+
             var txOrderData = new Dictionary<Order, Order>();
             var consumedOrders = new List<Order>();
             byte[]? txBytes = null;
@@ -317,6 +331,7 @@ public class Worker : BackgroundService
 
                     if (buyOrder is not null && matchOrder is not null)
                     {
+                        _logger.LogInformation("Buy Order matched, Rate: {0}, Total: {1} $HOSKY", buyOrder.Rate, matchOrder.Total);
                         txOrderData.Add(buyOrder, matchOrder);
                         consumedOrders.Add(buyOrder);
                         consumedOrders.Add(matchOrder);
@@ -333,6 +348,7 @@ public class Worker : BackgroundService
 
                     if (sellOrder is not null && matchOrder is not null)
                     {
+                        _logger.LogInformation("Sell Order matched, Rate: {0}, Total: ${1} $HOSKY", sellOrder.Rate, matchOrder.Total);
                         txOrderData.Add(sellOrder, matchOrder);
                         consumedOrders.Add(sellOrder);
                         consumedOrders.Add(matchOrder);
@@ -341,14 +357,19 @@ public class Worker : BackgroundService
 
                 if (consumedOrders.Count <= 0) continue;
                 var tempTxBytes = await BuildTxFromOrdersAsync(txOrderData);
-                // check if tempTxBytes length is more than 16kb
-                if (tempTxBytes is not null && tempTxBytes.Length > 16 * 1024) break;
-                else txBytes = tempTxBytes;
+                if (_blockfrostEpochService is not null)
+                {
+                    var protocolParam = await _blockfrostEpochService.GetLatestParametersAsync();
+                    if (tempTxBytes is not null && tempTxBytes.Length > protocolParam.MaxTxSize) break;
+                    else txBytes = tempTxBytes;
+                }
             }
 
             if (txBytes is not null)
             {
+                _logger.LogInformation("{0} swaps executed, submitting transaction", txOrderData.Count);
                 var txId = await SubmitTxBytesAsync(txBytes);
+                _logger.LogInformation("Swap Transaction Submitted, TxHash: {1}", txId);
                 if (txId.Length == 64)
                 {
                     consumedOrders.ForEach(e =>

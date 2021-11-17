@@ -92,6 +92,12 @@ public partial class IndexBase : ComponentBase
                 GeneralDialogMessage = "Unable to sign transaction...";
                 StateHasChanged();
                 break;
+            case CardanoWalletInteropErrorType.CreateTxError:
+                IsGeneralDialogVisible = true;
+                IsGeneralActionVisible = true;
+                GeneralDialogMessage = "Not enough funds, please check your wallet...";
+                StateHasChanged();
+                break;
             default:
                 break;
         }
