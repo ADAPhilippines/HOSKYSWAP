@@ -203,7 +203,7 @@
                         @foreach (var buyOrder in AppStateService.OpenBuyOrders)
                         {
                             <div class="grid grid-cols-2 text-center p-2 cursor-pointer odd:bg-dark-color even:bg-row-color hover:selected-order">
-                                <div class="text-left">@(buyOrder.Total) $HOSKY</div>
+                                <div class="text-left">@((ulong)(buyOrder.Total / buyOrder.Rate / 1_000_000)) $HOSKY</div>
                                 <div class="text-green-500 text-right">@(buyOrder.Rate) $ADA</div>
                             </div>
                         }
@@ -249,14 +249,17 @@
 
     </TitleContent>
     <DialogContent>
-        <ul class="ml-[24px] list-disc text-base">
-            <li>Message 1</li>
-            <li>Message 2</li>
-            <li>Message 3</li>
+        <p class="text-base mb-2">This is a super legit ADA to HOKSY exchange!</p>
+        <ul class="ml-[24px] list-disc text-base mb-1">
+            <li>Expect to get rug pulled anytime!</li>
+            <li>Only perfectly matched Buy/Sell pair is executed.</li>
+            <li>Only one(1) Buy/Sell Order is supported.</li>
+            <li>Only one(1) Buy/Sell Order is supported.</li>
+            <li>Only one(1) Buy/Sell Order is supported.</li>
         </ul>
     </DialogContent>
     <DialogActions>
-        <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="OnCloseDialog" Class="px-10 font-semibold">I am stupid and I will proceed.</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="OnCloseDialog" Class="px-10 font-semibold mb-2">I am stupid and I will proceed.</MudButton>
     </DialogActions>
 </MudDialog>
 
