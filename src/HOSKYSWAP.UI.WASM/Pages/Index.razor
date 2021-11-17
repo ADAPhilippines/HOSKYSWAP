@@ -125,34 +125,38 @@
                             <th class="pb-2 w-1/4">Action</th>
                             <th class="pb-2 w-1/4">Date</th>
                         </tr>
-                        @foreach (var order in OrderHistory)
+                        @if (AppStateService?.OrderHistory is not null)
                         {
-                            <tr class="text-center cursor-pointer odd:bg-dark-color even:bg-row-color hover:selected-order">
-                                <td class="text-left pl-1 py-1 w-full">
-                                    <MudTooltip Placement="Placement.Top" Text="@("price: " + order.Rate)">
-                                        @if (order.Action is "buy")
-                                        {
-                                            <span>@order.Total $HOSKY</span>
-                                        }
-                                        else
-                                        {
-                                            <span>@(order.Total * order.Rate) $ADA</span>
-                                        }
-                                    </MudTooltip>
-                                </td>
-                                <td class="@(order.Action is "buy" ? "text-green-500" : "text-red-500") py-1 w-full uppercase">
-                                    <MudTooltip Placement="Placement.Top" Text="@("price: " + order.Rate)">
-                                        <!---To add row price --->
-                                        @order.Action
-                                    </MudTooltip>
-                                </td>
-                                <td class="py-1 w-full">
-                                    <MudTooltip Placement="Placement.Top" Text="@("price: " + order.Rate)">
-                                        @(order.UpdatedAt.ToString("MM/dd/yyyy"))
-                                    </MudTooltip>
-                                </td>
-                            </tr>
+                            @foreach (var order in AppStateService.OrderHistory)
+                            {
+                                <tr class="text-center cursor-pointer odd:bg-dark-color even:bg-row-color hover:selected-order">
+                                    <td class="text-left pl-1 py-1 w-full">
+                                        <MudTooltip Placement="Placement.Top" Text="@("price: " + order.Rate)">
+                                            @if (order.Action is "buy")
+                                            {
+                                                <span>@order.Total $HOSKY</span>
+                                            }
+                                            else
+                                            {
+                                                <span>@(order.Total * order.Rate) $ADA</span>
+                                            }
+                                        </MudTooltip>
+                                    </td>
+                                    <td class="@(order.Action is "buy" ? "text-green-500" : "text-red-500") py-1 w-full uppercase">
+                                        <MudTooltip Placement="Placement.Top" Text="@("price: " + order.Rate)">
+                                            <!---To add row price --->
+                                            @order.Action
+                                        </MudTooltip>
+                                    </td>
+                                    <td class="py-1 w-full">
+                                        <MudTooltip Placement="Placement.Top" Text="@("price: " + order.Rate)">
+                                            @(order.UpdatedAt.ToString("MM/dd/yyyy"))
+                                        </MudTooltip>
+                                    </td>
+                                </tr>
+                            }
                         }
+
                     </table>
                 </div>
             </div>

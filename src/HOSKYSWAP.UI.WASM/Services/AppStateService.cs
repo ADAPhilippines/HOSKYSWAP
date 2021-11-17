@@ -67,6 +67,17 @@ public class AppStateService : INotifyPropertyChanged
         }
     }
     
+    private List<Order>? _orderHistory = null;
+    public List<Order>? OrderHistory
+    {
+        get => _orderHistory;
+        set
+        {
+            _orderHistory = value;
+            NotifyPropertyChanged();
+        }
+    }
+    
     private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")  
     {  
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

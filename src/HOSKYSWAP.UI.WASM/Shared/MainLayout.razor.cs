@@ -56,7 +56,20 @@ public partial class MainLayout
                 {
                     if (AppStateService is not null && BackendService is not null)
                         AppStateService.OpenSellOrders = await BackendService.GetOpenSellOrdersAsync();
+                }),
+                Task.Run(async () =>
+                {
+                    if (CardanoWalletInteropService is null || AppStateService is null ||
+                        BackendService is null) return;
+
+                    var walletAddress = await CardanoWalletInteropService.GetWalletAddressAsync();
+
+                    if (walletAddress is null) return;
+                    
+                    if (AppStateService is not null && BackendService is not null)
+                        AppStateService.OrderHistory = await BackendService.GetOrderHistoryAsync(walletAddress);
                 })
+                
             };
             
             await Task.WhenAll(tasks);
