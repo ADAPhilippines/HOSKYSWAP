@@ -5,7 +5,7 @@
 
 <MudTabs Class="max-w-base-content w-full backdrop-filter backdrop-blur-[5px] bg-transparent-dark text-white mt-12 rounded-lg">
     <MudTabPanel Icon="@Icons.Filled.Repeat" Text="Swap" Class="swap-tab">
-        @if (HasUnfilledOrder == false)
+        @if (AppStateService?.CurrentOrder is not null)
         {
             <div class="flex flex-col justify-center mt-4 p-4 pb-4">
                 <div>

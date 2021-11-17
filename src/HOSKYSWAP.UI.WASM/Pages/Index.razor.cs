@@ -79,6 +79,7 @@ public partial class IndexBase : ComponentBase
             }
 
             TotalRugpulledADA = await BackendService.GetTotalFeesRugpulledAsync();
+            Console.WriteLine(AppStateService?.CurrentOrder);
             await InvokeAsync(StateHasChanged);
         }
     }
