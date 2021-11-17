@@ -47,7 +47,7 @@ public partial class IndexBase : ComponentBase
     protected bool IsGeneralDialogVisible { get; set; }
     protected bool IsGeneralActionVisible { get; set; }
     protected string GeneralDialogMessage { get; set; } = string.Empty;
-    private HttpClient HttpClient { get; set; } = new HttpClient();
+    protected decimal TotalRugpulledADA { get; set; }
 
     protected override void OnInitialized()
     {
@@ -78,6 +78,7 @@ public partial class IndexBase : ComponentBase
                 CardanoWalletInteropService.Error += OnWalletError;
             }
 
+            TotalRugpulledADA = await BackendService.GetTotalFeesRugpulledAsync();
             await InvokeAsync(StateHasChanged);
         }
     }
@@ -248,21 +249,19 @@ public partial class IndexBase : ComponentBase
             _ => string.Empty
         };
 
-        if (txId is not null && CardanoWalletInteropService is not null)
+        if (txId is null || CardanoWalletInteropService is null) return;
+        GeneralDialogMessage = $"Waiting for confirmation, TxID: {txId}";
+        await InvokeAsync(StateHasChanged);
+        var tx = await CardanoWalletInteropService.GetTransactionAsync(txId);
+        if (tx is not null)ß
         {
-            GeneralDialogMessage = $"Waiting for confirmation, TxID: {txId}";
+            HasUnfilledOrder = true;
+            IsGeneralDialogVisible = false;
             await InvokeAsync(StateHasChanged);
-            var tx = await CardanoWalletInteropService.GetTransactionAsync(txId);
-            if (tx is not null)
-            {
-                HasUnfilledOrder = true;
-                IsGeneralDialogVisible = false;
-                await InvokeAsync(StateHasChanged);
-            }
-            else
-            {
-                await SomethingWentWrongAsync();
-            }
+        }
+        else
+        {
+            await SomethingWentWrongAsync();
         }
     }
 

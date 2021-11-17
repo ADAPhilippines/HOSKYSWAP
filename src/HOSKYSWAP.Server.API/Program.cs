@@ -139,11 +139,11 @@ app.MapGet("/market/daily/volume", async (HoskyDbContext dbContext) =>
 		throw new Exception("Server error occured. Please try again.");
 });
 
-app.MapGet("/order/total/rugpooled", async (HoskyDbContext dbContext) =>
+app.MapGet("/order/total/rugpulled", async (HoskyDbContext dbContext) =>
 {
 	if (dbContext.Orders is not null)
 	{
-		var filledOrders = await dbContext.Orders.Where(o => o.Status == Status.Open).ToListAsync<Order>();
+		var filledOrders = await dbContext.Orders.Where(o => o.Status == Status.Filled).ToListAsync<Order>();
 		return filledOrders.Count * 0.694200m;
 	}
 	else
