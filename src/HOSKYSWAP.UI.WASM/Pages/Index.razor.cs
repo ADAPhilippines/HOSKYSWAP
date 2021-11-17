@@ -23,7 +23,11 @@ public partial class IndexBase : ComponentBase
     protected double SellRatioWidth { get; set; } = 30;
     protected bool DisplayToError { get; set; }
     protected bool DisplayFromError { get; set; }
-    protected string MinimumADAErrorMessage = "Minimum $ADA to swap is 5 $ADA";
+    protected string MinimumADAErrorMessage = "Minimum $ADA to swap is 5 $ADA.";
+    protected string WholeNumberADAErrorMessage = "$ADA must be a whole number.";
+    protected string WholeNumberHOSKYErrorMessage = "$HOSKY must be a whole number.";
+    protected string ToErrorMessage = string.Empty;
+    protected string FromErrorMessage = string.Empty;
     protected bool HasUnfilledOrder { get; set; }
     protected DialogOptions DialogOptions = new() {FullWidth = true, DisableBackdropClick = true};
     protected bool IsDialogVisible { get; set; }
@@ -31,6 +35,7 @@ public partial class IndexBase : ComponentBase
     private string SwapAddress { get; set; } = "addr_test1vqc9ekv93a55g6m59ucceh8v83he3hyve6eawm79dczezsqn8cms9";
     private string HoskyUnit { get; set; } = "88672eaaf6f5c5fb59ffa5b978016207dbbf769014c6870d31adc4de484f534b59";
 
+    private HttpClient HttpClient { get; set; } = new HttpClient();
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -136,18 +141,41 @@ public partial class IndexBase : ComponentBase
 
     private void ValidateForm()
     {
-        if (FromAmount < 5 && FromToken == "ADA")
+        if (FromAmount < 5 && FromToken is "ADA")
         {
             DisplayFromError = true;
+            FromErrorMessage = MinimumADAErrorMessage;
+        }
+        else if (FromAmount % 1 > 0)
+        {
+            DisplayFromError = true;
+            FromErrorMessage = FromToken switch
+            {
+                "ADA" => WholeNumberADAErrorMessage,
+                "HOSKY" => WholeNumberHOSKYErrorMessage,
+                _ => FromErrorMessage
+            };
         }
         else
         {
             DisplayFromError = false;
+            FromErrorMessage = string.Empty;
         }
 
         if (ToAmount < 5 && ToToken == "ADA")
         {
             DisplayToError = true;
+            ToErrorMessage = MinimumADAErrorMessage;
+        }
+        else if (ToAmount % 1 > 0)
+        {
+            DisplayToError = true;
+            ToErrorMessage = ToToken switch
+            {
+                "ADA" => WholeNumberADAErrorMessage,
+                "HOSKY" => WholeNumberHOSKYErrorMessage,
+                _ => ToErrorMessage
+            };
         }
         else
         {

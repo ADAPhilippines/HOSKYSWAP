@@ -24,7 +24,7 @@
                                 <MudTextField Value="FromAmount" Placeholder="0.0" InputType="InputType.Number" Variant="Variant.Outlined" Margin="Margin.None" Class="hsky-textfield inline w-full font-semibold" T="decimal" ValueChanged="OnFromAmountChange" Immediate="true"></MudTextField>
                                 @if (DisplayFromError)
                                 {
-                                    <div class="text-red-600 pt-[4px]">@MinimumADAErrorMessage</div>
+                                    <div class="text-red-600 pt-[4px]">@FromErrorMessage</div>
                                 }
                             </div>
                             <MudSelect Value="FromToken" T="string" ValueChanged="OnFromTokenChanged" Variant="Variant.Outlined" Margin="Margin.None" OffsetY="true" Class="text-white inline hsky-select w-[125px]" Dense="true" PopoverClass="bg-dark-color text-white">
@@ -56,7 +56,7 @@
                                 <MudTextField Value="ToAmount" Placeholder="0.0" Immediate="true" InputType="InputType.Number" Variant="Variant.Outlined" Margin="Margin.None" Class="hsky-textfield inline font-semibold" T="decimal" ValueChanged="OnToAmountChange"></MudTextField>
                                 @if (DisplayToError)
                                 {
-                                    <div class="text-red-600 pt-[4px]">@MinimumADAErrorMessage</div>
+                                    <div class="text-red-600 pt-[4px]">@ToErrorMessage</div>
                                 }
                             </div>
                             <MudSelect Value="ToToken" T="string" ValueChanged="OnToTokenChanged" Variant="Variant.Outlined" Margin="Margin.None" OffsetY="true" Class="text-white inline hsky-select w-[125px]" Dense="true" PopoverClass="bg-dark-color text-white">
