@@ -338,30 +338,39 @@ public partial class IndexBase : ComponentBase
     private async Task<string?> SellHoskyAsync()
     {
         if (CardanoWalletInteropService is null) return null;
-        var txId = await CardanoWalletInteropService.SendAssetsAsync(new TxOutput()
-        {
-            Address = SwapAddress,
-            Amount = new List<Asset>
-            {
-                new Asset
-                {
-                    Unit = HoskyUnit,
-                    Quantity = (ulong)FromAmount
-                },
-                new Asset
-                {
-                    Unit = "lovelace",
-                    Quantity = 69_4200 + 1_500_000
-                }
-            }
-        },
-        JsonSerializer.Serialize(new
-        {
-            rate = PriceAmount.ToString(CultureInfo.InvariantCulture), 
-            action = "sell"
-        }));
 
-        return txId;
+        try
+        {
+            var txId = await CardanoWalletInteropService.SendAssetsAsync(new TxOutput()
+                {
+                    Address = SwapAddress,
+                    Amount = new List<Asset>
+                    {
+                        new Asset
+                        {
+                            Unit = HoskyUnit,
+                            Quantity = (ulong) FromAmount
+                        },
+                        new Asset
+                        {
+                            Unit = "lovelace",
+                            Quantity = 69_4200 + 1_500_000
+                        }
+                    }
+                },
+                JsonSerializer.Serialize(new
+                {
+                    rate = PriceAmount.ToString(CultureInfo.InvariantCulture),
+                    action = "sell"
+                }));
+
+            return txId;
+        }
+        catch
+        {
+            await SomethingWentWrongAsync();
+            return null;
+        }
     }
     
     private async Task CancelOrderAsync()
