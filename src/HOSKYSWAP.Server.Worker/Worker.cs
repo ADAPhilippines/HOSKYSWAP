@@ -133,7 +133,10 @@ public class Worker : BackgroundService
                     var tx = await _blockfrostTransactionsService.GetAsync(txHash);
                     if (tx is not null)
                     {
-                        confirmingOrders.ForEach(e => e.Status = Status.Filled);
+                        confirmingOrders.ForEach(e => {
+                            e.Status = Status.Filled;
+                            e.UpdatedAt = DateTime.UtcNow;
+                        });
                         await _dbContext.SaveChangesAsync();
                     }
                 }
@@ -351,7 +354,8 @@ public class Worker : BackgroundService
                     consumedOrders.ForEach(e =>
                     {
                         e.ExecuteTxId = txId;
-                        e.Status = Status.Filled;
+                        e.Status = Status.Confirming;
+                        e.UpdatedAt = DateTime.UtcNow;
                     });
                     await _dbContext.SaveChangesAsync();
                 }
