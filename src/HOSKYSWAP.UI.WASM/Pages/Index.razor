@@ -105,11 +105,13 @@
                 </div>
                 <div class="text-lg text-center mt-12 mb-20">
                     <p>You currently have a <span class="font-semibold uppercase">"@AppStateService?.CurrentOrder.Action"</span> order,</p>
-                    <p><span class="text-currency">@(@AppStateService?.CurrentOrder.Action == "buy" ? @AppStateService?.CurrentOrder.Total / 1000000 : @AppStateService?.CurrentOrder.Total)  @(@AppStateService?.CurrentOrder.Action == "buy" ? "$ADA" : "$HOSKY")</span> @("@") <span class="text-currency">@AppStateService?.CurrentOrder.Rate $ADA</span> <span class="font-semibold">$ADA/$HOSKY</span></p>
+                    <p>
+                        <span class="text-currency">@(@AppStateService?.CurrentOrder.Action == "buy" ? @AppStateService?.CurrentOrder.Total / 1000000 : @AppStateService?.CurrentOrder.Total) @(@AppStateService?.CurrentOrder.Action == "buy" ? "$ADA" : "$HOSKY")</span> @("@") <span class="text-currency">@AppStateService?.CurrentOrder.Rate $ADA</span> <span class="font-semibold">$ADA/$HOSKY</span>
+                    </p>
                     <p class="font-bold text-red-500">DISCLAIMER: If you already cancelled, please just wait and don't press cancel again or else you will get rugpulled.</p>
                 </div>
                 <MudButton OnClick="OnCancelSwapClicked" Class="text-sm bg-gradient-to-r from-aph-indigo to-aph-blue filter brightness-100 hover:brightness-125 text-white font-semibold rounded-lg p-3 normal-case w-full mb-[53px]">
-                    <MudIcon Icon="@Icons.Filled.RemoveCircle" Class="mr-2"/> Cancel
+                    <MudIcon Icon="@Icons.Filled.RemoveCircle" Class="mr-2"/> <span>Cancel</span>
                 </MudButton>
             </div>
         }
@@ -135,7 +137,7 @@
                                         <MudTooltip Placement="Placement.Top" Text="@("price: " + order.Rate + " $ADA")">
                                             @if (order.Action is "buy")
                                             {
-                                                <span>@order.Total $HOSKY</span>
+                                                <span>@((ulong)(order.Total / order.Rate / 1_000_000)) $HOSKY</span>
                                             }
                                             else
                                             {
@@ -151,7 +153,7 @@
                                             </MudTooltip>
                                         </td>
                                     }
-                                    else if(order.Status is Status.Cancelled)
+                                    else if (order.Status is Status.Cancelled)
                                     {
                                         <td class="text-gray-600 py-1 w-full uppercase">
                                             <MudTooltip Placement="Placement.Top" Text="@("price: " + order.Rate + " $ADA")">
@@ -172,7 +174,6 @@
                                 </tr>
                             }
                         }
-
                     </table>
                 </div>
             </div>
@@ -185,11 +186,8 @@
         <MudCard Class="backdrop-filter backdrop-blur-[5px] bg-transparent-dark flex flex-row justify-center mt-12 p-[4px] text-white w-full place-self-center">
             @if (AppStateService?.OpenOrderRatio is not null)
             {
-                <div class="bg-green-500 h-2 p-0" style="width:@AppStateService.OpenOrderRatio.Buy%">
-                </div>
-
-                <div class="bg-red-500 h-2 p-0" style="width:@AppStateService.OpenOrderRatio.Sell%">
-                </div>
+                <div class="bg-green-500 h-2 p-0" style="width:@AppStateService.OpenOrderRatio.Buy%"></div>
+                <div class="bg-red-500 h-2 p-0" style="width:@AppStateService.OpenOrderRatio.Sell%"></div>
             }
         </MudCard>
     </div>
@@ -207,7 +205,7 @@
                         @foreach (var buyOrder in AppStateService.OpenBuyOrders)
                         {
                             <div class="grid grid-cols-2 text-center p-2 cursor-pointer odd:bg-dark-color even:bg-row-color hover:selected-order">
-                                <div class="text-left">@((ulong)(buyOrder.Total / buyOrder.Rate / 1_000_000)) $HOSKY</div>
+                                <div class="text-left">@((ulong) (buyOrder.Total / buyOrder.Rate / 1_000_000)) $HOSKY</div>
                                 <div class="text-green-500 text-right">@(buyOrder.Rate) $ADA</div>
                             </div>
                         }
