@@ -96,9 +96,9 @@
                     <img src="/images/hosky.webp" class="h-[100px] w-[100px]" alt="HOSKY"/>
                 </div>
                 <div class="text-lg text-center mt-12 mb-28">
-                    You currently have a <span class="font-semibold uppercase">"Buy"</span> order,
+                    You currently have a <span class="font-semibold uppercase">"@AppStateService?.CurrentOrder.Action"</span> order,
                     <br/>
-                    <span class="text-currency">1000 $ADA</span> @("@") <span class="text-currency">0.000001 $ADA</span> <span class="font-semibold">$ADA/$HOSKY</span>
+                    <span class="text-currency">@AppStateService?.CurrentOrder.Total @(@AppStateService?.CurrentOrder.Action == "buy" ? "$ADA" : "$HOSKY")</span> @("@") <span class="text-currency">@AppStateService?.CurrentOrder.Rate $ADA</span> <span class="font-semibold">$ADA/$HOSKY</span>
                 </div>
                 <MudButton OnClick="OnCancelSwapClicked" Class="text-sm bg-gradient-to-r from-aph-indigo to-aph-blue filter brightness-100 hover:brightness-125 text-white font-semibold rounded-lg p-3 normal-case w-full mb-[53px]">
                     <MudIcon Icon="@Icons.Filled.RemoveCircle" Class="mr-2"/> Cancel
