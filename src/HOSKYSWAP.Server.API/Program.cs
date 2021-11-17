@@ -32,7 +32,7 @@ var blockfrostProjectID = builder.Configuration["BlockfrostProjectID"];
 var blockfrostAPI = builder.Configuration["BlockfrostAPI"];
 var cardanoNetwork = builder.Configuration["CardanoNetwork"];
 
-builder.Services.AddDbContext<HoskyDbContext>(options => options.UseNpgsql(connectionString), contextLifetime: ServiceLifetime.Singleton);
+builder.Services.AddDbContext<HoskyDbContext>(options => options.UseNpgsql(connectionString));
 builder.Services.AddBlockfrost(cardanoNetwork, blockfrostProjectID);
 var app = builder.Build();
 app.UseCors("AllowAll");

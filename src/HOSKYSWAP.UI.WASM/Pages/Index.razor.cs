@@ -262,9 +262,23 @@ public partial class IndexBase : ComponentBase
 
     protected async void OnCancelSwapClicked(MouseEventArgs args)
     {
-        HasUnfilledOrder = false;
+        IsGeneralDialogVisible = true;
+        GeneralDialogMessage = "Cancelling Order...";
 
-        await CancelOrderAsync();
+        var txId = await CancelOrderAsync();
+        if (txId is null || CardanoWalletInteropService is null) return;
+        GeneralDialogMessage = $"Waiting for confirmation, TxID: {txId}";
+        await InvokeAsync(StateHasChanged);
+        var tx = await CardanoWalletInteropService.GetTransactionAsync(txId);
+        if (tx is not null)
+        { 
+            IsGeneralDialogVisible = false;
+            await InvokeAsync(StateHasChanged);
+        }
+        else
+        {
+            await SomethingWentWrongAsync();
+        }
         
         await InvokeAsync(StateHasChanged);
     }
@@ -365,24 +379,34 @@ public partial class IndexBase : ComponentBase
         }
     }
     
-    private async Task CancelOrderAsync()
+    private async Task<string?> CancelOrderAsync()
     {
-        if (CardanoWalletInteropService is null) return;
-        var txId = await CardanoWalletInteropService.SendAssetsAsync(new TxOutput()
+        if (CardanoWalletInteropService is null) return null;
+        try
         {
-            Address = SwapAddress,
-            Amount = new List<Asset>
-            {
-                new Asset
+
+            var txId = await CardanoWalletInteropService.SendAssetsAsync(new TxOutput()
                 {
-                    Unit = "lovelace",
-                    Quantity = 69_4200 + 1_000_000
-                }
-            }
-        },
-        JsonSerializer.Serialize(new
+                    Address = SwapAddress,
+                    Amount = new List<Asset>
+                    {
+                        new Asset
+                        {
+                            Unit = "lovelace",
+                            Quantity = 69_4200 + 1_000_000
+                        }
+                    }
+                },
+                JsonSerializer.Serialize(new
+                {
+                    action = "cancel"
+                }));
+            return txId;
+        }
+        catch
         {
-            action = "cancel"
-        }));
+            await SomethingWentWrongAsync();
+            return null;
+        }
     }
 }
