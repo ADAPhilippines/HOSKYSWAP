@@ -828,6 +828,10 @@ html, body {
   margin-right: 6px !important;
 }
 
+.mb-2 {
+  margin-bottom: 0.5rem !important;
+}
+
 .inline {
   display: inline !important;
 }

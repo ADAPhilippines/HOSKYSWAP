@@ -427,6 +427,8 @@ class CardanoWalletInterop {
         this.objectRef = objectRef;
         this.errorCallbackName = callbackName;
     }
+    
+    public HasNami = () => !!window.cardano;
 }
 
 export default CardanoWalletInterop;

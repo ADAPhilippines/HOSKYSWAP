@@ -31,7 +31,7 @@
             </NavLink>
             <div class="text-white font-semibold"><span class="text-currency">1 $ADA</span> = <span class="text-currency">1,000,000 $HOSKY</span> </div>
             <div class="text-white font-semibold"><span class="text-currency">$100,000</span> MARKETCAP</div>
-            @if (IsWalletConnected)
+            @if (AppStateService?.IsWalletConnected ?? false)
             {
                 <div class="flex flex-row items-center">
                     <div class="h-[3rem] w-[3rem] inline mr-[10px] bg-white rounded-full items-center justify-center flex">
@@ -91,3 +91,19 @@
         </div>
     </div>
 </div>
+
+
+<MudDialog @bind-IsVisible="IsNamiWarningDialogVisible" Options="@AppStateService?.DialogOptions">
+    <TitleContent>
+        <div class="flex flex-row align-center">
+            <MudIcon Icon="@Icons.Material.Filled.Warning" Class="mr-3 text-white" Size="Size.Large"/>
+            <div class="text-xl font-semibold">You must have Nami wallet installed</div>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <p>Please visit <a href="https://namiwallet.io">https://namiwallet.io</a></p>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Success" Class="px-10 font-semibold" OnClick="() => IsNamiWarningDialogVisible=false">OK</MudButton>
+    </DialogActions>
+</MudDialog>

@@ -13,6 +13,12 @@ public class CardanoWalletInteropService
         _jsRuntime = jsRuntime;
     }
 
+    public async ValueTask<bool> HasNamiAsync()
+    {
+        if (_jsRuntime is null) return false;
+        return await _jsRuntime.InvokeAsync<bool>("CardanoWalletInterop.HasNami");
+    }
+    
     public async ValueTask<bool> IsWalletConnectedAsync()
     {
         if (_jsRuntime is null) return false;
