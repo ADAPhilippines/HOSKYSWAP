@@ -413,6 +413,6 @@ public partial class IndexBase : ComponentBase, IDisposable
 
     public void Dispose()
     {
-        if (AppStateService != null) AppStateService.PropertyChanged += OnAppStateChanged;
+        if (AppStateService != null) AppStateService.PropertyChanged -= OnAppStateChanged;
     }
 }

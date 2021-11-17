@@ -169,6 +169,6 @@ public partial class MainLayout : IDisposable
 
     public void Dispose()
     {
-        if (AppStateService != null) AppStateService.PropertyChanged += OnAppStateChanged;
+        if (AppStateService != null) AppStateService.PropertyChanged -= OnAppStateChanged;
     }
 }
