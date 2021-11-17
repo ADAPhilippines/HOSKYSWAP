@@ -196,7 +196,7 @@
             <div class="text-center font-semibold text-xl p-2 mt-4">Buy Order</div>
             <div class="flex flex-col">
                 <div class="grid grid-cols-2 gap-0 p-2">
-                    <div class="font-semibold text-left">Amount: ($HOSKY)</div>
+                    <div class="font-semibold text-left">Amount: ($ADA)</div>
                     <div class="font-semibold text-right">Price ($ADA)</div>
                 </div>
                 <div class="overflow-y-auto max-h-[300px] ">
@@ -205,7 +205,7 @@
                         @foreach (var buyOrder in AppStateService.OpenBuyOrders)
                         {
                             <div class="grid grid-cols-2 text-center p-2 cursor-pointer odd:bg-dark-color even:bg-row-color hover:selected-order">
-                                <div class="text-left">@((ulong) (buyOrder.Total / buyOrder.Rate / 1_000_000)) $HOSKY</div>
+                                <div class="text-left">@buyOrder.Total $ADA</div>
                                 <div class="text-green-500 text-right">@(buyOrder.Rate) $ADA</div>
                             </div>
                         }
