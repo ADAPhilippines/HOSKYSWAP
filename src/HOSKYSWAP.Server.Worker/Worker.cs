@@ -106,6 +106,7 @@ public class Worker : BackgroundService
                 {
                     var networkParams = await _blockfrostEpochService.GetLatestParametersAsync(stoppingToken);
                     _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
+                    await ProcessCancelledOrdersAsync(stoppingToken);
                     await SyncTxConfirmationsAsync(stoppingToken);
                     await SyncNewOrdersAsync(stoppingToken);
                     await MatchOrdersAsync(stoppingToken);
@@ -115,6 +116,81 @@ public class Worker : BackgroundService
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error in Worker");
+            }
+        }
+    }
+
+    private async Task ProcessCancelledOrdersAsync(CancellationToken stoppingToken)
+    {
+        if (_blockfrostAddressService is not null && _dbContext.Orders is not null && _blockfrostTransactionsService is not null && _blockfrostBlockService is not null && _blockfrostEpochService is not null)
+        {
+            var latestBlock = await _blockfrostBlockService.GetLatestAsync();
+            var protocolParam = await _blockfrostEpochService.GetLatestParametersAsync();
+
+            var cancelledOrders = await _dbContext.Orders.Where(o => o.Status == Status.Cancelled).ToListAsync();
+            _logger.LogInformation("Cancel Orders: {0}", cancelledOrders.Count);
+
+            foreach (var cancelledOrder in cancelledOrders)
+            {
+                _logger.LogInformation("Cancelling Order: {0}", cancelledOrder.TxHash);
+
+                var ordersToCancel = await _dbContext.Orders.Where(o => o.Status == Status.Open && o.OwnerAddress == cancelledOrder.OwnerAddress).ToListAsync();
+                var transactionBody = TransactionBodyBuilder.Create;
+                ordersToCancel.Add(cancelledOrder);
+                var totalFee = (ulong)ordersToCancel.Count * 694200UL;
+
+                foreach (var order in ordersToCancel)
+                {
+                    foreach (var idx in order.TxIndexes)
+                    {
+                        transactionBody.AddInput(order.TxHash.HexToByteArray(), (uint)idx);
+                    }
+                    if (order.Action == "buy")
+                    {
+                        transactionBody.AddOutput(new Address(order.OwnerAddress), order.Total);
+                    }
+                    else if (order.Action == "sell")
+                    {
+                        transactionBody.AddOutput(new Address(order.OwnerAddress), 1500000,
+                            TokenBundleBuilder.Create.AddToken(_assetPolicyId.HexToByteArray(), _assetName.HexToByteArray(), order.Total));
+                    }
+                }
+
+                transactionBody.AddOutput(new Address(cancelledOrder.OwnerAddress), 1000000);
+                transactionBody.AddOutput(_walletAddress, totalFee);
+
+                transactionBody
+                .SetTtl((uint)latestBlock.Slot + 1000)
+                .SetFee(0);
+
+                var witnesses = TransactionWitnessSetBuilder.Create
+                    .AddVKeyWitness(_walletPublicKey, _walletPrivateKey);
+
+                var transactionBuilder = TransactionBuilder.Create
+                    .SetBody(transactionBody)
+                    .SetWitnesses(witnesses);
+
+                var transaction = transactionBuilder.Build();
+
+                var fee = transaction.CalculateFee((uint)protocolParam.MinFeeA, (uint)protocolParam.MinFeeB);
+
+                transactionBody.SetFee(fee);
+                transaction = transactionBuilder.Build();
+                transaction.TransactionBody.TransactionOutputs.Last().Value.Coin -= fee;
+
+                var txBytes = transaction.Serialize();
+                var txId = await SubmitTxBytesAsync(txBytes);
+
+                if (txId.Length == 64)
+                {
+                    _logger.LogInformation("Order Cancelled: {0}", cancelledOrder.TxHash);
+                    ordersToCancel.ForEach(e => e.Status = Status.Cancelled);
+                    await _dbContext.SaveChangesAsync();
+                }
+                else
+                {
+                    _logger.LogInformation("Cancel Transaction Failed, Reason: {0}", txId);
+                }
             }
         }
     }
@@ -208,13 +284,28 @@ public class Worker : BackgroundService
                     }
                     else
                     {
+                        var actionTryGetResult = hoskySwapMeta.JsonMetadata.TryGetProperty("action", out var actionProp);
+                        var action = actionProp.GetString();
 
-                        if (hoskySwapMeta.JsonMetadata.TryGetProperty("action", out var actionProp) &&
+                        if (action != null && action == "cancel")
+                        {
+                            _dbContext.Orders.Add(new()
+                            {
+                                OwnerAddress = txUtxos.Inputs.First().Address,
+                                TxHash = utxo.TxHash,
+                                Action = string.Empty,
+                                Rate = 0,
+                                Total = 0,
+                                Status = Status.Cancelled,
+                                TxIndexes = siblingUtxos.Select(e => e.TxIndex).ToList(),
+                                ExecuteTxId = string.Empty
+                            });
+                        }
+                        else if (actionTryGetResult &&
                             hoskySwapMeta.JsonMetadata.TryGetProperty("rate", out var rateProp) &&
                             rateProp.GetString() != null &&
-                            actionProp.GetString() != null)
+                            action != null)
                         {
-                            var action = actionProp.GetString();
                             if (decimal.TryParse(rateProp.GetString(), out var rate) &&
                                 action != null &&
                                 (action == "buy" || action == "sell"))
@@ -379,6 +470,10 @@ public class Worker : BackgroundService
                         e.UpdatedAt = DateTime.UtcNow;
                     });
                     await _dbContext.SaveChangesAsync();
+                }
+                else
+                {
+                    _logger.LogInformation("Swap Transaction Failed, Reason: {0}", txId);
                 }
             }
         }
