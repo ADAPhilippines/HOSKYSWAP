@@ -85,7 +85,12 @@ public partial class MainLayout: IDisposable
                     
                     if (AppStateService is not null && BackendService is not null)
                         AppStateService.OrderHistory = await BackendService.GetOrderHistoryAsync(walletAddress);
-                })
+                }),
+                Task.Run(async () =>
+                {
+                    if (AppStateService is not null && BackendService is not null)
+                        AppStateService.OpenOrderRatio = await BackendService.GetOpenOrderRatioAsync();
+                }),
                 
             };
             

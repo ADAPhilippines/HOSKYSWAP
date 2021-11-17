@@ -90,6 +90,17 @@ public class AppStateService : INotifyPropertyChanged
         }
     }
     
+    private OpenOrderRatio? _openOrderRatio = null;
+    public OpenOrderRatio? OpenOrderRatio
+    {
+        get => _openOrderRatio;
+        set
+        {
+            _openOrderRatio = value;
+            NotifyPropertyChanged();
+        }
+    }
+    
     private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")  
     {  
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

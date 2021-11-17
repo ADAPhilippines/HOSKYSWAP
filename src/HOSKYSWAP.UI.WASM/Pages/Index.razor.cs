@@ -36,7 +36,6 @@ public partial class IndexBase : ComponentBase, IDisposable
     protected bool HasUnfilledOrder { get; set; }
     protected DialogOptions DialogOptions = new() {FullWidth = true, DisableBackdropClick = true};
     protected bool IsDialogVisible { get; set; }
-    protected List<Order> OrderHistory { get; set; } = new List<Order>();
     private string DidReadDialogStorageKey = "DidReadDialog";
     private string SwapAddress { get; set; } = "addr_test1vqc9ekv93a55g6m59ucceh8v83he3hyve6eawm79dczezsqn8cms9";
     private string HoskyUnit { get; set; } = "88672eaaf6f5c5fb59ffa5b978016207dbbf769014c6870d31adc4de484f534b59";
