@@ -114,6 +114,7 @@ public class Worker : BackgroundService
                     await SyncTxConfirmationsAsync(stoppingToken);
                     await SyncNewOrdersAsync(stoppingToken);
                     await MatchOrdersAsync(stoppingToken);
+                    await Task.Delay(10000);
                 }
             }
             catch (Exception ex)
