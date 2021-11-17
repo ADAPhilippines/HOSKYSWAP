@@ -205,7 +205,7 @@
                         @foreach (var buyOrder in AppStateService.OpenBuyOrders)
                         {
                             <div class="grid grid-cols-2 text-center p-2 cursor-pointer odd:bg-dark-color even:bg-row-color hover:selected-order">
-                                <div class="text-left">@buyOrder.Total $ADA</div>
+                                <div class="text-left">@((buyOrder.Total / 1_000_000)) $ADA</div>
                                 <div class="text-green-500 text-right">@(buyOrder.Rate) $ADA</div>
                             </div>
                         }
