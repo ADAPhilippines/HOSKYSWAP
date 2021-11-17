@@ -66,6 +66,16 @@ app.MapGet("/order/{address}", async ([FromRoute] string address, HoskyDbContext
 		throw new Exception("Server error occured. Please try again.");
 });
 
+app.MapGet("/order/{address}/open", async ([FromRoute] string address, HoskyDbContext dbContext) =>
+{
+	if (dbContext.Orders is not null)
+	{
+		return await dbContext.Orders.Where(o => o.OwnerAddress == address && o.Status == Status.Open).ToListAsync<Order>();
+	}
+	else
+		throw new Exception("Server error occured. Please try again.");
+});
+
 app.MapGet("/order/open/buy", async (HoskyDbContext dbContext) =>
 {
 	if (dbContext.Orders is not null)
