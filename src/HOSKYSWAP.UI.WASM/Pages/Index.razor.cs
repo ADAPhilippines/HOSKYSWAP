@@ -264,10 +264,6 @@ public partial class IndexBase : ComponentBase
                 await SomethingWentWrongAsync();
             }
         }
-        else
-        {
-            await SomethingWentWrongAsync();
-        }
     }
 
     protected async void OnCancelSwapClicked(MouseEventArgs args)
