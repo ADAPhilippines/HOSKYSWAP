@@ -31,8 +31,8 @@ public partial class IndexBase : ComponentBase, IDisposable
     protected string ToErrorMessage = string.Empty;
     protected string FromErrorMessage = string.Empty;
     private string DidReadDialogStorageKey = "DidReadDialog";
-    private string SwapAddress { get; set; } = "addr_test1vqc9ekv93a55g6m59ucceh8v83he3hyve6eawm79dczezsqn8cms9";
-    private string HoskyUnit { get; set; } = "88672eaaf6f5c5fb59ffa5b978016207dbbf769014c6870d31adc4de484f534b59";
+    private string SwapAddress { get; set; } = "addr1vxfyhp4vxj2ef7udvfef9y8qhtjz5ns8n5x7mgxvk85acdsnfws74";
+    private string HoskyUnit { get; set; } = "a0028f350aaabe0545fdcb56b039bfb08e4bb4d8c4d7c3c7d481c235484f534b59";
     protected bool IsDisclaimerDialogVisible { get; set; }
     protected bool IsGeneralDialogVisible { get; set; }
     protected bool IsGeneralActionVisible { get; set; }
