@@ -22,4 +22,5 @@ public record Order
     public Status Status { get; set; } = Status.Open;
     public string ExecuteTxId { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }
