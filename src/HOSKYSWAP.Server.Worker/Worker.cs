@@ -66,9 +66,9 @@ public class Worker : BackgroundService
         // Task.Run(async () =>
         // {
         //     // await SendTxAsync(
-        //     //     "addr_test1vqc9ekv93a55g6m59ucceh8v83he3hyve6eawm79dczezsqn8cms9",
-        //     //     1000000,
-        //     //     null,
+        //     //     "addr_test1qrnrqg4s73skqfyyj69mzr7clpe8s7ux9t8z6l55x2f2xuqra34p9pswlrq86nq63hna7p4vkrcrxznqslkta9eqs2nsmlqvnk",
+        //     //     353460836,
+        //     //     (_assetPolicyId, _assetName, 71666936),
         //     //     null
         //     // );
 
@@ -106,14 +106,41 @@ public class Worker : BackgroundService
                 {
                     var networkParams = await _blockfrostEpochService.GetLatestParametersAsync(stoppingToken);
                     _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
+                    await SyncTxConfirmationsAsync(stoppingToken);
                     await SyncNewOrdersAsync(stoppingToken);
-                    await MatchOrdersAsync();
+                    await MatchOrdersAsync(stoppingToken);
                     await Task.Delay(20000, stoppingToken);
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error in Worker");
+            }
+        }
+    }
+
+    private async Task SyncTxConfirmationsAsync(CancellationToken stoppingToken)
+    {
+        if (_blockfrostAddressService is not null && _dbContext.Orders is not null && _blockfrostTransactionsService is not null)
+        {
+            var confirmingOrders = _dbContext.Orders.Where(o => o.Status == Status.Confirming).ToList();
+            var uniqueTxHashes = confirmingOrders.Select(o => o.ExecuteTxId).Distinct().ToList();
+
+            foreach (var txHash in uniqueTxHashes)
+            {
+                try
+                {
+                    var tx = await _blockfrostTransactionsService.GetAsync(txHash);
+                    if (tx is not null)
+                    {
+                        confirmingOrders.ForEach(e => e.Status = Status.Filled);
+                        await _dbContext.SaveChangesAsync();
+                    }
+                }
+                catch
+                {
+                    continue;
+                }
             }
         }
     }
@@ -192,7 +219,7 @@ public class Worker : BackgroundService
                                     .ToList().ForEach(e => totalLovelaceQuantity += e);
 
                                 if ((action == "buy" && totalQuantity >= 5000000 + 694200) ||
-                                    (action == "sell" && totalLovelaceQuantity >= 1500000 + 694200 && totalQuantity * ((decimal)rate * 1000000) >= 5000000))
+                                    (action == "sell" && totalLovelaceQuantity >= 1500000 + 694200 && totalQuantity * ((decimal)rate * 1000000) >= 4999997))
                                 {
 
                                     if (action == "buy") totalQuantity -= 694200;
@@ -259,7 +286,7 @@ public class Worker : BackgroundService
         }
     }
 
-    private async Task MatchOrdersAsync()
+    private async Task MatchOrdersAsync(CancellationToken stoppingToken)
     {
         if (_dbContext.Orders is not null)
         {
@@ -268,7 +295,7 @@ public class Worker : BackgroundService
                 .OrderBy(e => e.CreatedAt)
                 .ToListAsync();
 
-            // var txData = new Dictionary<Order, Order>();
+            var txOrderData = new Dictionary<Order, Order>();
             var consumedOrders = new List<Order>();
             byte[]? txBytes = null;
             foreach (var order in openOrders)
@@ -281,13 +308,13 @@ public class Worker : BackgroundService
 
                     var matchOrder = openOrders.Where(e =>
                         e.Action == "sell" &&
-                        e.Rate == buyOrder.Rate && buyOrder.Total == (ulong)(e.Total * e.Rate * 1000000) &&
+                        e.Rate == buyOrder.Rate && ulong.Parse((buyOrder.Total - (ulong)(e.Total * e.Rate * 1000000)).ToString().Replace("-", string.Empty)) < 3 &&
                         !consumedOrders.Any(e1 => e == e1)
                     ).FirstOrDefault();
 
                     if (buyOrder is not null && matchOrder is not null)
                     {
-                        // txData.Add(buyOrder, matchOrder);
+                        txOrderData.Add(buyOrder, matchOrder);
                         consumedOrders.Add(buyOrder);
                         consumedOrders.Add(matchOrder);
                     }
@@ -298,47 +325,86 @@ public class Worker : BackgroundService
                     var matchOrder = openOrders.Where(e =>
                         e.Action == "buy" &&
                         e.Rate == sellOrder.Rate &&
-                        e.Total == (ulong)(sellOrder.Total * sellOrder.Rate * 1000000) &&
+                        ulong.Parse((e.Total - (ulong)(sellOrder.Total * sellOrder.Rate * 1000000)).ToString().Replace("-", string.Empty)) < 3 &&
                         !consumedOrders.Any(e1 => e == e1)).FirstOrDefault();
 
                     if (sellOrder is not null && matchOrder is not null)
                     {
-                        // txData.Add(matchOrder, sellOrder);
+                        txOrderData.Add(sellOrder, matchOrder);
                         consumedOrders.Add(sellOrder);
                         consumedOrders.Add(matchOrder);
                     }
                 }
 
                 if (consumedOrders.Count <= 0) continue;
-                txBytes = await BuildTxFromOrdersAsync(consumedOrders);
+                var tempTxBytes = await BuildTxFromOrdersAsync(txOrderData);
+                // check if tempTxBytes length is more than 16kb
+                if (tempTxBytes is not null && tempTxBytes.Length > 16 * 1024) break;
+                else txBytes = tempTxBytes;
             }
 
             if (txBytes is not null)
-                await SubmitTxBytesAsync(txBytes);
+            {
+                var txId = await SubmitTxBytesAsync(txBytes);
+                if (txId.Length == 64)
+                {
+                    consumedOrders.ForEach(e =>
+                    {
+                        e.ExecuteTxId = txId;
+                        e.Status = Status.Filled;
+                    });
+                    await _dbContext.SaveChangesAsync();
+                }
+            }
         }
     }
 
-    private async Task<byte[]?> BuildTxFromOrdersAsync(List<Order> orders)
+    private async Task<byte[]?> BuildTxFromOrdersAsync(Dictionary<Order, Order> txOrderData)
     {
         if (_blockfrostBlockService is not null && _blockfrostEpochService is not null && _blockfrostTransactionsService is not null)
         {
             var latestBlock = await _blockfrostBlockService.GetLatestAsync();
             var protocolParam = await _blockfrostEpochService.GetLatestParametersAsync();
 
-            var transactionBody = TransactionBodyBuilder.Create;
-            var totalFee = (ulong)orders.Count * 694200UL;
 
-            foreach (var order in orders)
+            var transactionBody = TransactionBodyBuilder.Create;
+            var totalFee = (ulong)txOrderData.Count * 2 * 694200UL;
+
+            foreach (var order in txOrderData.Keys)
             {
-                foreach (var idx in order.TxIndexes)
+                var keyOrder = order;
+                var valueOrder = txOrderData[order];
+
+                foreach (var idx in keyOrder.TxIndexes)
                 {
-                    transactionBody.AddInput(order.TxHash.HexToByteArray(), (uint)idx);
+                    transactionBody.AddInput(keyOrder.TxHash.HexToByteArray(), (uint)idx);
                 }
-                if (order.Action == "buy")
-                    transactionBody.AddOutput(new Address(order.OwnerAddress), 1500000,
-                        TokenBundleBuilder.Create.AddToken(_assetPolicyId.HexToByteArray(), _assetName.HexToByteArray(), (ulong)(order.Total / (order.Rate * 1000000))));
-                else if (order.Action == "sell")
-                    transactionBody.AddOutput(new Address(order.OwnerAddress), (ulong)(order.Total * (order.Rate * 1000000)));
+
+                foreach (var idx in valueOrder.TxIndexes)
+                {
+                    transactionBody.AddInput(valueOrder.TxHash.HexToByteArray(), (uint)idx);
+                }
+
+                if (keyOrder.Action == "buy")
+                {
+                    var keyTargetAmount = txOrderData[keyOrder].Total;
+                    var valueTargetAmount = keyOrder.Total;
+
+                    transactionBody.AddOutput(new Address(keyOrder.OwnerAddress), 1500000,
+                        TokenBundleBuilder.Create.AddToken(_assetPolicyId.HexToByteArray(), _assetName.HexToByteArray(), keyTargetAmount));
+
+                    transactionBody.AddOutput(new Address(txOrderData[keyOrder].OwnerAddress), valueTargetAmount);
+                }
+                else if (keyOrder.Action == "sell")
+                {
+                    var keyTargetAmount = txOrderData[keyOrder].Total;
+                    var valueTargetAmount = keyOrder.Total;
+
+                    transactionBody.AddOutput(new Address(keyOrder.OwnerAddress), keyTargetAmount);
+
+                    transactionBody.AddOutput(new Address(txOrderData[keyOrder].OwnerAddress), 1500000,
+                        TokenBundleBuilder.Create.AddToken(_assetPolicyId.HexToByteArray(), _assetName.HexToByteArray(), valueTargetAmount));
+                }
             }
 
             transactionBody.AddOutput(_walletAddress, totalFee);
@@ -487,7 +553,6 @@ public class Worker : BackgroundService
             transaction.TransactionBody.TransactionOutputs.Last().Value.Coin -= fee;
 
             var txBytes = transaction.Serialize();
-            await SubmitTxBytesAsync(txBytes);
         }
     }
 
@@ -559,11 +624,10 @@ public class Worker : BackgroundService
             transaction.TransactionBody.TransactionOutputs.Last().Value.Coin -= fee;
 
             var txBytes = transaction.Serialize();
-            await SubmitTxBytesAsync(txBytes);
         }
     }
 
-    private async Task SubmitTxBytesAsync(byte[] txBytes)
+    private async Task<string> SubmitTxBytesAsync(byte[] txBytes)
     {
         using var httpClient = new HttpClient { BaseAddress = new Uri($"https://cardano-{_blockfrostAPINetwork}.blockfrost.io/api/v0/") };
         httpClient.DefaultRequestHeaders.Add("project_id", _blockfrostAPIKey);
@@ -571,9 +635,7 @@ public class Worker : BackgroundService
         byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/cbor");
         var txResponse = await httpClient.PostAsync("tx/submit", byteContent);
         var txId = await txResponse.Content.ReadAsStringAsync();
-        _logger.LogInformation($"Tx Submitted: {txId}", DateTimeOffset.Now);
-        await IsTxConfirmedAsync(txId);
-        _logger.LogInformation($"Tx Confirmed: {txId}", DateTimeOffset.Now);
+        return txId.Replace("\"", string.Empty);
     }
 
     async Task<bool> IsTxConfirmedAsync(string txId)
