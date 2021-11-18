@@ -1127,6 +1127,11 @@ html, body {
   background-color: rgba(239, 68, 68, var(--tw-bg-opacity)) !important;
 }
 
+.bg-owner-row-color {
+  --tw-bg-opacity: 1 !important;
+  background-color: rgba(84, 72, 164, var(--tw-bg-opacity)) !important;
+}
+
 .bg-aph-darkblue {
   --tw-bg-opacity: 1 !important;
   background-color: rgba(18, 25, 33, var(--tw-bg-opacity)) !important;
@@ -1327,6 +1332,11 @@ html, body {
 
 .brightness-100 {
   --tw-brightness: brightness(1) !important;
+  filter: var(--tw-filter) !important;
+}
+
+.brightness-125 {
+  --tw-brightness: brightness(1.25) !important;
   filter: var(--tw-filter) !important;
 }
 

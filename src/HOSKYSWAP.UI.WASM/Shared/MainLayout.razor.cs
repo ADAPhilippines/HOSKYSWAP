@@ -60,6 +60,7 @@ public partial class MainLayout : IDisposable
                     var walletAddress = await CardanoWalletInteropService.GetWalletAddressAsync();
 
                     if (walletAddress is null) return;
+                    AppStateService.CurrentWalletAddress = walletAddress;
 
                     var buyOrders = await BackendService.GetOpenBuyOrdersByAddressAsync(walletAddress);
                     AppStateService.CurrentOrder = buyOrders?.FirstOrDefault();
