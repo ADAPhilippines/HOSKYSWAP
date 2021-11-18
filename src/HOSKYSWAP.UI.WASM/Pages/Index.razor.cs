@@ -15,6 +15,7 @@ public partial class IndexBase : ComponentBase, IDisposable
     [Inject] protected CardanoWalletInteropService? CardanoWalletInteropService { get; set; }
     [Inject] protected ILocalStorageService? LocalStorage { get; set; }
     [Inject] protected AppStateService? AppStateService { get; set; }
+    [Inject] protected HelperInteropService? HelperInteropService { get; set; }
     protected string ToToken { get; set; } = "HOSKY";
     protected string FromToken { get; set; } = "ADA";
     protected decimal FromAmount { get; set; } = 5m;
@@ -411,7 +412,7 @@ public partial class IndexBase : ComponentBase, IDisposable
         return amt;
     }
 
-    protected void FillOrderFields(string action, decimal total, decimal rate)
+    protected async void FillOrderFields(string action, decimal total, decimal rate)
     {
         FromAmount = total;
         PriceAmount = rate;
@@ -428,6 +429,8 @@ public partial class IndexBase : ComponentBase, IDisposable
         }
         
         OnFromAmountChange(total);
+        if (HelperInteropService is not null)
+            await HelperInteropService.ScrollElementIntoView("body");
     }
 
     public void Dispose()
