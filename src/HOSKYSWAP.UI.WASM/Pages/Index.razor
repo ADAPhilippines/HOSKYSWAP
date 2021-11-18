@@ -204,7 +204,8 @@
                     {
                         @foreach (var buyOrder in AppStateService.OpenBuyOrders)
                         {
-                            <div class="grid grid-cols-2 text-center p-2 cursor-pointer odd:bg-dark-color even:bg-row-color hover:selected-order">
+                            <div class="grid grid-cols-2 text-center p-2 cursor-pointer odd:bg-dark-color even:bg-row-color hover:selected-order"
+                                 onclick=@(()=> FillOrderFields("buy", buyOrder.Total, buyOrder.Rate))>
                                 <div class="text-left">@((ulong) (buyOrder.Total / buyOrder.Rate / 1_000_000)) $HOSKY</div>
                                 <div class="text-green-500 text-right">@(buyOrder.Rate) $ADA</div>
                             </div>
@@ -225,7 +226,8 @@
                     {
                         @foreach (var sellOrder in AppStateService.OpenSellOrders)
                         {
-                            <div class="grid grid-cols-2 text-center p-2 cursor-pointer odd:bg-dark-color even:bg-row-color hover:selected-order">
+                            <div class="grid grid-cols-2 text-center p-2 cursor-pointer odd:bg-dark-color even:bg-row-color hover:selected-order"
+                                 onclick=@(()=> FillOrderFields("sell", sellOrder.Total, sellOrder.Rate))>
                                 <div class="text-red-500 text-left">
                                     @(sellOrder.Rate) $ADA
                                 </div>

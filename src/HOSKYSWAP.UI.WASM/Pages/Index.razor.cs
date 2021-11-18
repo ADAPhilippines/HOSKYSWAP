@@ -411,6 +411,25 @@ public partial class IndexBase : ComponentBase, IDisposable
         return amt;
     }
 
+    protected void FillOrderFields(string action, decimal total, decimal rate)
+    {
+        FromAmount = total;
+        PriceAmount = rate;
+
+        if (action == "sell")
+        {
+            FromToken = "HOSKY";
+            ToToken = "ADA";
+        }
+        else if (action == "buy")
+        {
+            FromToken = "ADA";
+            ToToken = "HOSKY";
+        }
+        
+        OnFromAmountChange(total);
+    }
+
     public void Dispose()
     {
         if (AppStateService != null) AppStateService.PropertyChanged -= OnAppStateChanged;
