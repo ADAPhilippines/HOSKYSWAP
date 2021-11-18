@@ -414,21 +414,21 @@ public partial class IndexBase : ComponentBase, IDisposable
 
     protected async void FillOrderFields(string action, decimal total, decimal rate)
     {
-        FromAmount = total;
+        ToAmount = total;
         PriceAmount = rate;
 
         if (action == "sell")
         {
-            FromToken = "HOSKY";
-            ToToken = "ADA";
+            ToToken = "HOSKY";
+            FromToken = "ADA";
         }
         else if (action == "buy")
         {
-            FromToken = "ADA";
-            ToToken = "HOSKY";
+            ToToken = "ADA";
+            FromToken = "HOSKY";
         }
         
-        OnFromAmountChange(total);
+        OnToAmountChange(total);
         if (HelperInteropService is not null)
             await HelperInteropService.ScrollElementIntoView("body");
     }
