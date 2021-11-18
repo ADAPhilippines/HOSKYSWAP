@@ -30,7 +30,7 @@
                 <div class="text-white font-semibold inline">$HOSKY SWAP</div>
             </NavLink>
             <div class="text-white font-semibold"><span class="text-currency">1 $HOSKY</span> = <span class="text-currency">@($"{CurrentPrice} $USD")</span> <span>MARKET PRICE</span> </div>
-            <div class="text-white font-semibold"><span class="text-currency">@($"{AppStateService?.MarketCap:N} $USD")</span> MARKETCAP</div>
+            <div class="text-white font-semibold"><span class="text-currency">@($"{AppStateService?.MarketCap:N0} $USD")</span> MARKETCAP</div>
             @if (AppStateService?.IsWalletConnected ?? false)
             {
                 <div class="flex flex-row items-center">
