@@ -9,6 +9,8 @@ public class AppStateService : INotifyPropertyChanged
 {
     public readonly DialogOptions DialogOptions = new() {FullWidth = true, DisableBackdropClick = true};
 
+    public readonly string HoskyUnit = "a0028f350aaabe0545fdcb56b039bfb08e4bb4d8c4d7c3c7d481c235484f534b59";
+
     private bool _isWalletConnected = false;
 
     public bool IsWalletConnected
@@ -150,6 +152,30 @@ public class AppStateService : INotifyPropertyChanged
         set
         {
             _currentWalletAddress = value;
+            NotifyPropertyChanged();
+        }
+    }
+
+    private ulong _hoskyBalance = 0;
+    public ulong HoskyBalance
+    {
+        get => _hoskyBalance;
+
+        set
+        {
+            _hoskyBalance = value;
+            NotifyPropertyChanged();
+        }
+    }
+    
+    private ulong _lovelaceBalance = 0;
+    public ulong LovelaceBalance
+    {
+        get => _lovelaceBalance;
+
+        set
+        {
+            _lovelaceBalance = value;
             NotifyPropertyChanged();
         }
     }

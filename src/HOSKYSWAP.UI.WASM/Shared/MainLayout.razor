@@ -37,7 +37,16 @@
                     <div class="h-[3rem] w-[3rem] inline mr-[10px] bg-white rounded-full items-center justify-center flex">
                         <img class="h-3/4" alt="" src="@UserIdenticon"/>
                     </div>
-                    <div class="text-white font-semibold">@FormatAddress()</div>
+                    <div class="flex flex-column">
+                        <span class="font-semibold">
+                            <span class="text-currency">@($"{AppStateService.LovelaceBalance / 1_000_000:N0}")</span> 
+                            <span class="text-white">$ADA</span>
+                        </span>
+                        <span class="font-semibold">
+                            <span class="text-currency"> @($"{AppStateService.HoskyBalance:N0}")</span> 
+                            <span class="text-white">$HOSKY</span>
+                        </span>
+                    </div>
                 </div>
             }
             else

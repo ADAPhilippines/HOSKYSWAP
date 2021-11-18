@@ -115,9 +115,11 @@ public partial class MainLayout : IDisposable
                     var walletAddress = await CardanoWalletInteropService.GetWalletAddressAsync();
 
                     if (walletAddress is null) return;
+                    
+                    AppStateService.OrderHistory = await BackendService.GetOrderHistoryAsync(walletAddress);
 
-                    if (AppStateService is not null && BackendService is not null)
-                        AppStateService.OrderHistory = await BackendService.GetOrderHistoryAsync(walletAddress);
+                    AppStateService.LovelaceBalance = ulong.Parse(await CardanoWalletInteropService.GetBalanceAsync());
+                    AppStateService.HoskyBalance = ulong.Parse(await CardanoWalletInteropService.GetBalanceAsync(AppStateService.HoskyUnit));
                 }),
                 Task.Run(async () =>
                 {
@@ -163,15 +165,11 @@ public partial class MainLayout : IDisposable
             AppStateService.IsWalletConnected = true;
             WalletAddress = await CardanoWalletInteropService.GetWalletAddressAsync() ?? String.Empty;
             UserIdenticon = await GetIdenticonAsync();
+            
+            AppStateService.LovelaceBalance = ulong.Parse(await CardanoWalletInteropService.GetBalanceAsync());
+            AppStateService.HoskyBalance = ulong.Parse(await CardanoWalletInteropService.GetBalanceAsync(AppStateService.HoskyUnit));
             await InvokeAsync(StateHasChanged);
         }
-    }
-
-    private string FormatAddress()
-    {
-        return WalletAddress.Length > 10
-            ? $"{WalletAddress.Substring(0, 4)}...{WalletAddress[^8..]}"
-            : WalletAddress;
     }
 
     private async Task<string> GetIdenticonAsync()
