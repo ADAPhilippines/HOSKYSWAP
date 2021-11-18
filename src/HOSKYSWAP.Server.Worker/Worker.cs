@@ -197,7 +197,11 @@ public class Worker : BackgroundService
                 if (txId.Length == 64)
                 {
                     _logger.LogInformation("Order Cancelled: {0}", cancelledOrder.TxHash);
-                    ordersToCancel.ForEach(e => e.Status = Status.Cancelled);
+                    ordersToCancel.ForEach(e =>
+                    {
+                        e.Status = Status.Cancelled;
+                        e.ExecuteTxId = txId;
+                    });
                     await _dbContext.SaveChangesAsync();
                 }
                 else
