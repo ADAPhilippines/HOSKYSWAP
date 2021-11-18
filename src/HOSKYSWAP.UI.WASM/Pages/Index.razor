@@ -205,7 +205,8 @@
                     {
                         @foreach (var buyOrder in AppStateService.OpenBuyOrders)
                         {
-                            <div class="transition-all mud-ripple grid grid-cols-2 text-center p-2 cursor-pointer hover:selected-order @(buyOrder.OwnerAddress == AppStateService.CurrentWalletAddress ? "bg-owner-row-color brightness-125" : " odd:bg-dark-color even:bg-row-color")">
+                            <div class="transition-all mud-ripple grid grid-cols-2 text-center p-2 cursor-pointer hover:selected-order @(buyOrder.OwnerAddress == AppStateService.CurrentWalletAddress ? "bg-owner-row-color brightness-125" : " odd:bg-dark-color even:bg-row-color")"
+                                 onclick=@(()=> FillOrderFields("buy", buyOrder.Total / 1_000_000, buyOrder.Rate))>
                                 <div class="text-left">@((buyOrder.Total / 1_000_000)) $ADA</div>
                                 <div class="text-green-500 text-right">@(buyOrder.Rate) $ADA</div>
                             </div>
@@ -226,7 +227,8 @@
                     {
                         @foreach (var sellOrder in AppStateService.OpenSellOrders)
                         {
-                            <div class="transition-all mud-ripple grid grid-cols-2 text-center p-2 cursor-pointer hover:selected-order @(sellOrder.OwnerAddress == AppStateService.CurrentWalletAddress ? "bg-owner-row-color brightness-125" : " odd:bg-dark-color even:bg-row-color")">
+                            <div class="transition-all mud-ripple grid grid-cols-2 text-center p-2 cursor-pointer hover:selected-order @(sellOrder.OwnerAddress == AppStateService.CurrentWalletAddress ? "bg-owner-row-color brightness-125" : " odd:bg-dark-color even:bg-row-color")"
+                                 onclick=@(()=> FillOrderFields("sell", sellOrder.Total, sellOrder.Rate))>
                                 <div class="text-red-500 text-left">
                                     @(sellOrder.Rate) $ADA
                                 </div>
