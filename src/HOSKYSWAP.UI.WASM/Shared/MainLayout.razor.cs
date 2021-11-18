@@ -71,11 +71,22 @@ public partial class MainLayout : IDisposable
 
                     if (rate is null) return;
                     AppStateService.AdaToUsdRate = rate.Cardano.USD;
+                    
+                    if (BackendService is null || AppStateService is null) return;
+                    AppStateService.MarketCap = await BackendService.GetMarketCapAsync(AppStateService.AdaToUsdRate);
+                    
+                    
                 }),
                 Task.Run(async () =>
                 {
                     if (BackendService is null || AppStateService is null) return;
-                    AppStateService.MarketCap = await BackendService.GetMarketCapAsync(AppStateService.AdaToUsdRate);
+                    var rate = await BackendService.GetADAPriceAsync();
+
+                    if (rate is null) return;
+                    AppStateService.AdaToUsdRate = rate.Cardano.USD;
+                    
+                    if (AppStateService is null || BackendService is null) return;
+                    AppStateService.DailyVolume = await BackendService.GetDailyVolumeAsync(AppStateService.AdaToUsdRate);
                 }),
                 Task.Run(async () =>
                 {
@@ -116,16 +127,11 @@ public partial class MainLayout : IDisposable
                 {
                     if (AppStateService is null || BackendService is null) return;
                     AppStateService.LastExcecutedOrder = await BackendService.GetLastExecutedOrderAsync();
-                }),
-                Task.Run(async () =>
-                {
-                    if (AppStateService is null || BackendService is null) return;
-                    AppStateService.DailyVolume = await BackendService.GetDailyVolumeAsync(AppStateService.AdaToUsdRate);
                 })
             };
 
             await Task.WhenAll(tasks);
-            await Task.Delay(5000);
+            await Task.Delay(10000);
         }
     }
 
