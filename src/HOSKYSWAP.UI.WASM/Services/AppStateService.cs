@@ -141,6 +141,18 @@ public class AppStateService : INotifyPropertyChanged
             NotifyPropertyChanged();
         }
     }
+    
+    private string _currentWalletAddress = string.Empty;
+    public string CurrentWalletAddress
+    {
+        get => _currentWalletAddress;
+
+        set
+        {
+            _currentWalletAddress = value;
+            NotifyPropertyChanged();
+        }
+    }
 
     private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
     {

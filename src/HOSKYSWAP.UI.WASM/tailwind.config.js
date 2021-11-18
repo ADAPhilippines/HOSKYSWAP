@@ -42,7 +42,8 @@ module.exports = {
                 'aph-blue-darker': '#383EAF',
                 'currency': 'rgb(240, 185, 11)',
                 'row-color': '#394049',
-                'selected-row-color': '#4b3f91'
+                'selected-row-color': '#4b3f91',
+                'owner-row-color': '#5448a4'
             },
             fontFamily: {
                 'poppins': ['Poppins', 'sans-serif']
