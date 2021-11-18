@@ -28,8 +28,10 @@ public class Worker : BackgroundService
     private string _assetName { get; set; } = string.Empty;
     private string _walletSeed { get; set; } = string.Empty;
     private ulong _swapFee { get; set; } = 694200;
+    private ulong _marginOfErrorLovelace = 100;
     private string _blockfrostAPIKey { get; set; } = string.Empty;
     private string _blockfrostAPINetwork { get; set; } = string.Empty;
+    private string _changeWalletAddress { get; set; } = string.Empty;
     private ServiceProvider? _blockfrostServiceProvider { get; set; } = null;
     private IEpochsService? _blockfrostEpochService { get; set; } = null;
     private IBlocksService? _blockfrostBlockService { get; set; } = null;
@@ -57,6 +59,8 @@ public class Worker : BackgroundService
         _blockfrostBlockService = _blockfrostServiceProvider.GetService<IBlocksService>();
         _blockfrostTransactionsService = _blockfrostServiceProvider.GetService<ITransactionsService>();
         _blockfrostAddressService = _blockfrostServiceProvider.GetService<IAddressesService>();
+        _marginOfErrorLovelace = ulong.Parse(_config["MarginOfErrorLovelace"]);
+        _changeWalletAddress = _config["ChangeWalletAddress"];
 
         // Initialization Procedures
         RestoreWalletFromSeed();
@@ -110,6 +114,7 @@ public class Worker : BackgroundService
                     await SyncTxConfirmationsAsync(stoppingToken);
                     await SyncNewOrdersAsync(stoppingToken);
                     await MatchOrdersAsync(stoppingToken);
+                    await Task.Delay(20000);
                 }
             }
             catch (Exception ex)
@@ -165,7 +170,7 @@ public class Worker : BackgroundService
                 }
 
                 transactionBody.AddOutput(new Address(cancelledOrder.OwnerAddress), 1000000);
-                transactionBody.AddOutput(_walletAddress, totalFee);
+                transactionBody.AddOutput(new Address(_changeWalletAddress), totalFee);
 
                 transactionBody
                 .SetTtl((uint)latestBlock.Slot + 1000)
@@ -192,7 +197,11 @@ public class Worker : BackgroundService
                 if (txId.Length == 64)
                 {
                     _logger.LogInformation("Order Cancelled: {0}", cancelledOrder.TxHash);
-                    ordersToCancel.ForEach(e => e.Status = Status.Cancelled);
+                    ordersToCancel.ForEach(e =>
+                    {
+                        e.Status = Status.Cancelled;
+                        e.ExecuteTxId = txId;
+                    });
                     await _dbContext.SaveChangesAsync();
                 }
                 else
@@ -424,7 +433,7 @@ public class Worker : BackgroundService
 
                     var matchOrder = openOrders.Where(e =>
                         e.Action == "sell" &&
-                        e.Rate == buyOrder.Rate && ulong.Parse((buyOrder.Total - (ulong)(e.Total * e.Rate * 1000000)).ToString().Replace("-", string.Empty)) < 3 &&
+                        e.Rate == buyOrder.Rate && ulong.Parse((buyOrder.Total - (ulong)(e.Total * e.Rate * 1000000)).ToString().Replace("-", string.Empty)) < _marginOfErrorLovelace &&
                         !consumedOrders.Any(e1 => e == e1)
                     ).FirstOrDefault();
 
@@ -442,7 +451,7 @@ public class Worker : BackgroundService
                     var matchOrder = openOrders.Where(e =>
                         e.Action == "buy" &&
                         e.Rate == sellOrder.Rate &&
-                        ulong.Parse((e.Total - (ulong)(sellOrder.Total * sellOrder.Rate * 1000000)).ToString().Replace("-", string.Empty)) < 3 &&
+                        ulong.Parse((e.Total - (ulong)(sellOrder.Total * sellOrder.Rate * 1000000)).ToString().Replace("-", string.Empty)) < _marginOfErrorLovelace &&
                         !consumedOrders.Any(e1 => e == e1)).FirstOrDefault();
 
                     if (sellOrder is not null && matchOrder is not null)
@@ -535,7 +544,7 @@ public class Worker : BackgroundService
                 }
             }
 
-            transactionBody.AddOutput(_walletAddress, totalFee);
+            transactionBody.AddOutput(new Address(_changeWalletAddress), totalFee);
 
             transactionBody
                 .SetTtl((uint)latestBlock.Slot + 1000)
@@ -621,7 +630,7 @@ public class Worker : BackgroundService
                 var changeAssetDelta = changeAsset.Item3 - asset.Value.Item3;
                 if (changeAssetDelta > 0)
                 {
-                    transactionBody.AddOutput(_walletAddress, 2000000, TokenBundleBuilder.Create
+                    transactionBody.AddOutput(new Address(_changeWalletAddress), 2000000, TokenBundleBuilder.Create
                         .AddToken(asset.Value.Item1.HexToByteArray(), asset.Value.Item2.HexToByteArray(), changeAssetDelta));
                     totalLovelace -= 2000000;
                 }
@@ -641,11 +650,11 @@ public class Worker : BackgroundService
             {
                 var changeTokens = TokenBundleBuilder.Create;
                 utxoAssets.ForEach(e => changeTokens.AddToken(e.Item1, e.Item2, e.Item3));
-                transactionBody.AddOutput(_walletAddress, totalLovelace, changeTokens);
+                transactionBody.AddOutput(new Address(_changeWalletAddress), totalLovelace, changeTokens);
             }
             else if (totalLovelace > 1200000)
             {
-                transactionBody.AddOutput(_walletAddress, totalLovelace);
+                transactionBody.AddOutput(new Address(_changeWalletAddress), totalLovelace);
             }
             else if (totalLovelace > 0 && totalLovelace < 1200000)
             {
