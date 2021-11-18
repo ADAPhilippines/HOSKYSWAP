@@ -15,12 +15,12 @@ public partial class MainLayout : IDisposable
     private string UserIdenticon { get; set; } = string.Empty;
     private bool IsNamiWarningDialogVisible { get; set; } = false;
 
-    private ulong CurrentPrice
+    private decimal CurrentPrice
     {
         get
         {
             if (AppStateService?.LastExcecutedOrder is null) return 0;
-            return (ulong) (1 / AppStateService.LastExcecutedOrder.Rate);
+            return Math.Round((AppStateService.LastExcecutedOrder.Rate * AppStateService.AdaToUsdRate), 10);
         }
     }
 
@@ -128,6 +128,12 @@ public partial class MainLayout : IDisposable
                 }),
                 Task.Run(async () =>
                 {
+                    if (BackendService is null || AppStateService is null) return;
+                    var rate = await BackendService.GetADAPriceAsync();
+
+                    if (rate is null) return;
+                    AppStateService.AdaToUsdRate = rate.Cardano.USD;
+                    
                     if (AppStateService is null || BackendService is null) return;
                     AppStateService.LastExcecutedOrder = await BackendService.GetLastExecutedOrderAsync();
                 })
