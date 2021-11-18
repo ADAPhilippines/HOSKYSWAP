@@ -4,3 +4,5 @@
 **/appsettings.Development.json
 **/appsettings.json
 **/.DS_Store
+dist/dotnet-install.sh
+dist/*
