@@ -7,5 +7,6 @@ declare global {
         CardanoWalletInterop: CardanoWalletInterop;
         cardano: ICardanoDAPPConnector;
         GenerateIdenticon: (str:string) => string;
+        ScrollElementIntoView: (selector: string, block: ScrollLogicalPosition) => void;
     }
 }

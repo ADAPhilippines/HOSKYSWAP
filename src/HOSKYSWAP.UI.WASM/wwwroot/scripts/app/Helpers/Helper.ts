@@ -22,6 +22,13 @@ class Helper
     }
 
     public static HexToBytes = (str: string): Uint8Array => Uint8Array.from(Buffer.from(str, 'hex'));
+
+    public static ScrollElementIntoView = (selector: string, block: ScrollLogicalPosition = "start"): void => {
+        const element = document.querySelector(selector) as HTMLElement;
+
+        if(element)
+            element.scrollIntoView({ behavior: 'smooth', block: block});
+    }
 }
 
 export default Helper
