@@ -20,6 +20,7 @@ public partial class IndexBase : ComponentBase, IDisposable
     protected string FromToken { get; set; } = "ADA";
     protected decimal FromAmount { get; set; } = 5m;
     protected decimal ToAmount { get; set; } = 5000000;
+    protected decimal PriceAmount { get; set; } = 0.000001m;
     protected double BuyRatioWidth { get; set; } = 70;
     protected double SellRatioWidth { get; set; } = 30;
     protected const decimal ERROR_MARGIN = 0.0001m;
@@ -54,7 +55,15 @@ public partial class IndexBase : ComponentBase, IDisposable
         IsGeneralDialogVisible = false;
     }
 
-    private void OnAppStateChanged(object? sender, PropertyChangedEventArgs e) => StateHasChanged();
+    private void OnAppStateChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (AppStateService is not null && e.PropertyName == "InitialPrice")
+        {
+            PriceAmount = AppStateService.InitialPrice;
+            OnPriceAmountChange(PriceAmount);
+        }
+        StateHasChanged();
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -100,15 +109,15 @@ public partial class IndexBase : ComponentBase, IDisposable
     protected async void OnFromAmountChange(decimal fromAmount)
     {
         FromAmount = fromAmount;
-        if (fromAmount > 0 && AppStateService.InitialPrice > 0)
+        if (fromAmount > 0 && PriceAmount > 0)
         {
             if (FromToken == "ADA")
             {
-                ToAmount = (ulong)(FromAmount / AppStateService.InitialPrice);
+                ToAmount = (ulong)(FromAmount / PriceAmount);
             }
             else
             {
-                ToAmount = RoundAmount(FromAmount * AppStateService.InitialPrice);
+                ToAmount = RoundAmount(FromAmount * PriceAmount);
             }
         }
         else
@@ -123,14 +132,14 @@ public partial class IndexBase : ComponentBase, IDisposable
     protected async void OnToAmountChange(decimal toAmount)
     {
         ToAmount = toAmount;
-        if (ToAmount > 0 && AppStateService.InitialPrice > 0)
+        if (ToAmount > 0 && PriceAmount > 0)
         {
             if (FromToken == "ADA")
             {
-                FromAmount = RoundAmount(ToAmount * AppStateService.InitialPrice);
+                FromAmount = RoundAmount(ToAmount * PriceAmount);
             }
             else
-                FromAmount = (ulong)(ToAmount / AppStateService.InitialPrice);
+                FromAmount = (ulong)(ToAmount / PriceAmount);
         }
         else
         {
@@ -143,8 +152,8 @@ public partial class IndexBase : ComponentBase, IDisposable
 
     protected async void OnPriceAmountChange(decimal priceAmount)
     {
-        AppStateService.InitialPrice = priceAmount;
-        if (AppStateService.InitialPrice > 0 && FromAmount > 0)
+        PriceAmount = priceAmount;
+        if (PriceAmount > 0 && FromAmount > 0)
         {
             OnFromAmountChange(FromAmount);
         }
@@ -313,7 +322,7 @@ public partial class IndexBase : ComponentBase, IDisposable
                 },
                 JsonSerializer.Serialize(new
                     {
-                        rate = AppStateService.InitialPrice.ToString(CultureInfo.InvariantCulture), 
+                        rate = PriceAmount.ToString(CultureInfo.InvariantCulture), 
                         action = "buy"
                     }
                 ));
@@ -360,7 +369,7 @@ public partial class IndexBase : ComponentBase, IDisposable
                 },
                 JsonSerializer.Serialize(new
                 {
-                    rate = AppStateService.InitialPrice.ToString(CultureInfo.InvariantCulture),
+                    rate = PriceAmount.ToString(CultureInfo.InvariantCulture),
                     action = "sell"
                 }));
 
@@ -418,7 +427,7 @@ public partial class IndexBase : ComponentBase, IDisposable
     protected async void FillOrderFields(string action, decimal total, decimal rate)
     {
         ToAmount = total;
-        AppStateService.InitialPrice = rate;
+        PriceAmount = rate;
 
         if (action == "sell")
         {
