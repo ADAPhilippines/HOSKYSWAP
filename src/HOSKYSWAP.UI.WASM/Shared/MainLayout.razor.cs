@@ -14,6 +14,7 @@ public partial class MainLayout : IDisposable
     private string WalletAddress { get; set; } = string.Empty;
     private string UserIdenticon { get; set; } = string.Empty;
     private bool IsNamiWarningDialogVisible { get; set; } = false;
+    private bool IsCurrentPriceSet { get; set; } = false;
 
     private decimal CurrentPrice
     {
@@ -75,8 +76,6 @@ public partial class MainLayout : IDisposable
                     
                     if (BackendService is null || AppStateService is null) return;
                     AppStateService.MarketCap = await BackendService.GetMarketCapAsync(AppStateService.AdaToUsdRate);
-                    
-                    
                 }),
                 Task.Run(async () =>
                 {
@@ -136,6 +135,11 @@ public partial class MainLayout : IDisposable
                     
                     if (AppStateService is null || BackendService is null) return;
                     AppStateService.LastExcecutedOrder = await BackendService.GetLastExecutedOrderAsync();
+
+                    if (IsCurrentPriceSet) return;
+
+                    AppStateService.InitialPrice = AppStateService?.LastExcecutedOrder?.Rate ?? 0.000001m;
+                    IsCurrentPriceSet = true;
                 })
             };
 

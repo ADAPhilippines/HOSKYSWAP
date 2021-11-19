@@ -119,6 +119,18 @@ public class AppStateService : INotifyPropertyChanged
             NotifyPropertyChanged();
         }
     }
+
+    private decimal _initialPrice = 0.000001m;
+
+    public decimal InitialPrice
+    {
+        get => _initialPrice;
+        set
+        {
+            _initialPrice = value;
+            NotifyPropertyChanged();
+        }
+    }
     
     private decimal _dailyVolume = 0.00m;
 

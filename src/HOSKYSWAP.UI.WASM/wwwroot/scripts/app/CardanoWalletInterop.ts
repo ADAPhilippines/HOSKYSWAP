@@ -330,20 +330,27 @@ class CardanoWalletInterop {
         const utxosHex = await window.cardano.getUtxos();
         const utxos: TransactionUnspentOutput[] = utxosHex
             .map(utxo => CardanoWasmLoader.Cardano.TransactionUnspentOutput.from_bytes(Buffer.from(utxo, "hex")));
-
+        
+        let sortedUtxos = utxos.sort((a, b) => {
+            const aAssetLen = a.output().amount().multiasset()?.len() ?? 0;
+            const bAssetLen = b.output().amount().multiasset()?.len() ?? 0;
+            
+            const aAssetCoin = parseInt(a.output().amount().coin().to_str());
+            const bAssetCoin = parseInt(b.output().amount().coin().to_str());
+            if (aAssetLen > bAssetLen)
+                return 1;
+            if (aAssetLen < bAssetLen)
+                return -1;
+            if (aAssetCoin > bAssetCoin)
+                return -1;
+            if (aAssetCoin < bAssetCoin)
+                return 1;
+            else
+                return 0;
+        });
+        
         const selectedUtxos: TransactionUnspentOutput[] = [];
         if (txOutput.amount.length == 1 && txOutput.amount[0].unit == "lovelace") {
-            const sortedUtxos = utxos.sort((a, b) => {
-                const aAssetLen = a.output().amount().multiasset()?.len() ?? 0;
-                const bAssetLen = b.output().amount().multiasset()?.len() ?? 0;
-                if (aAssetLen > bAssetLen)
-                    return 1;
-                else if (aAssetLen < bAssetLen)
-                    return -1;
-                else
-                    return 0;
-            });
-
             for (let i in sortedUtxos) {
                 selectedUtxos.push(sortedUtxos[i]);
                 let sum = selectedUtxos
@@ -358,7 +365,8 @@ class CardanoWalletInterop {
             if (asset && lovelace) {
                 const scriptHash = CardanoWasmLoader.Cardano.ScriptHash.from_bytes(Helper.HexToBytes(asset.unit.slice(0, 56)));
                 const assetNameHash = CardanoWasmLoader.Cardano.AssetName.new(Helper.HexToBytes(asset.unit.slice(56)));
-                const sortedUtxos = utxos.sort((a, b) => {
+                
+                sortedUtxos = sortedUtxos.sort((a, b) => {
                     const aPolicyAssets = a.output().amount().multiasset()?.get(scriptHash);
                     const aAssetQuantity = aPolicyAssets?.get(assetNameHash) ??
                         CardanoWasmLoader.Cardano.BigNum.from_str("0");

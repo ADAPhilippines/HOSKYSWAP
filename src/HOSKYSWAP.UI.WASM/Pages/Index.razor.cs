@@ -20,7 +20,6 @@ public partial class IndexBase : ComponentBase, IDisposable
     protected string FromToken { get; set; } = "ADA";
     protected decimal FromAmount { get; set; } = 5m;
     protected decimal ToAmount { get; set; } = 5000000;
-    protected decimal PriceAmount { get; set; } = 0.000001m;
     protected double BuyRatioWidth { get; set; } = 70;
     protected double SellRatioWidth { get; set; } = 30;
     protected const decimal ERROR_MARGIN = 0.0001m;
@@ -101,15 +100,15 @@ public partial class IndexBase : ComponentBase, IDisposable
     protected async void OnFromAmountChange(decimal fromAmount)
     {
         FromAmount = fromAmount;
-        if (fromAmount > 0 && PriceAmount > 0)
+        if (fromAmount > 0 && AppStateService.InitialPrice > 0)
         {
             if (FromToken == "ADA")
             {
-                ToAmount = (ulong)(FromAmount / PriceAmount);
+                ToAmount = (ulong)(FromAmount / AppStateService.InitialPrice);
             }
             else
             {
-                ToAmount = RoundAmount(FromAmount * PriceAmount);
+                ToAmount = RoundAmount(FromAmount * AppStateService.InitialPrice);
             }
         }
         else
@@ -124,14 +123,14 @@ public partial class IndexBase : ComponentBase, IDisposable
     protected async void OnToAmountChange(decimal toAmount)
     {
         ToAmount = toAmount;
-        if (ToAmount > 0 && PriceAmount > 0)
+        if (ToAmount > 0 && AppStateService.InitialPrice > 0)
         {
             if (FromToken == "ADA")
             {
-                FromAmount = RoundAmount(ToAmount * PriceAmount);
+                FromAmount = RoundAmount(ToAmount * AppStateService.InitialPrice);
             }
             else
-                FromAmount = (ulong)(ToAmount / PriceAmount);
+                FromAmount = (ulong)(ToAmount / AppStateService.InitialPrice);
         }
         else
         {
@@ -144,8 +143,8 @@ public partial class IndexBase : ComponentBase, IDisposable
 
     protected async void OnPriceAmountChange(decimal priceAmount)
     {
-        PriceAmount = priceAmount;
-        if (PriceAmount > 0 && FromAmount > 0)
+        AppStateService.InitialPrice = priceAmount;
+        if (AppStateService.InitialPrice > 0 && FromAmount > 0)
         {
             OnFromAmountChange(FromAmount);
         }
@@ -314,7 +313,7 @@ public partial class IndexBase : ComponentBase, IDisposable
                 },
                 JsonSerializer.Serialize(new
                     {
-                        rate = PriceAmount.ToString(CultureInfo.InvariantCulture), 
+                        rate = AppStateService.InitialPrice.ToString(CultureInfo.InvariantCulture), 
                         action = "buy"
                     }
                 ));
@@ -361,7 +360,7 @@ public partial class IndexBase : ComponentBase, IDisposable
                 },
                 JsonSerializer.Serialize(new
                 {
-                    rate = PriceAmount.ToString(CultureInfo.InvariantCulture),
+                    rate = AppStateService.InitialPrice.ToString(CultureInfo.InvariantCulture),
                     action = "sell"
                 }));
 
@@ -419,7 +418,7 @@ public partial class IndexBase : ComponentBase, IDisposable
     protected async void FillOrderFields(string action, decimal total, decimal rate)
     {
         ToAmount = total;
-        PriceAmount = rate;
+        AppStateService.InitialPrice = rate;
 
         if (action == "sell")
         {
