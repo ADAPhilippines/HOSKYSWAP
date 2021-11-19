@@ -132,15 +132,16 @@ app.MapGet("/market/daily/volume", async (HoskyDbContext dbContext) =>
 	if (dbContext.Orders is not null)
 	{
 		var yesterday = DateTime.UtcNow.AddDays(-1);
-		var filledOrders = await dbContext.Orders.Where(o => o.Status == Status.Filled && o.UpdatedAt >= yesterday && o.Action.ToLower() == "buy").OrderBy(o => o.Rate).ToListAsync<Order>();
-		decimal totalAdaVolume = 0;
+		var filledOrders = await dbContext.Orders
+			.Where(o => o.Status == Status.Filled && o.UpdatedAt >= yesterday && o.Action.ToLower() == "buy")
+			.ToListAsync();
 
-		filledOrders.ForEach(e => totalAdaVolume += (e.Total * e.Rate));
-		totalAdaVolume = totalAdaVolume * 2;
+		var totalAdaVolume = 0UL;
+		filledOrders.ForEach(e => totalAdaVolume += e.Total);
 
 		var result = new Volume
 		{
-			Amount = totalAdaVolume,
+			Amount = (totalAdaVolume * 2) / 1000000,
 			Currency = "$ADA"
 		};
 		return result;
