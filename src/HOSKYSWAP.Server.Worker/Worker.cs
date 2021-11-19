@@ -64,40 +64,6 @@ public class Worker : BackgroundService
 
         // Initialization Procedures
         RestoreWalletFromSeed();
-
-        // Tests
-        // MintFakeHoskyAsync().ConfigureAwait(false).GetAwaiter().GetResult();
-        // Task.Run(async () =>
-        // {
-        //     // await SendTxAsync(
-        //     //     "addr_test1qrnrqg4s73skqfyyj69mzr7clpe8s7ux9t8z6l55x2f2xuqra34p9pswlrq86nq63hna7p4vkrcrxznqslkta9eqs2nsmlqvnk",
-        //     //     353460836,
-        //     //     (_assetPolicyId, _assetName, 71666936),
-        //     //     null
-        //     // );
-
-        //     // await SendTxAsync(
-        //     //     _walletAddressString,
-        //     //     10000000 + 694200,
-        //     //     null,
-        //     //     (7283, new { action = "buy", rate = "0.000002" })
-        //     // );
-
-        //     // await SendTxAsync(
-        //     //     _walletAddressString,
-        //     //     1500000 + 694200,
-        //     //     (_assetPolicyId, _assetName, 100),
-        //     //     (7283, new { action = "sell", rate = "0.000001" })
-        //     // );
-
-        //     // await SendTxAsync(
-        //     //     _walletAddressString,
-        //     //     1500000 + 694200,
-        //     //     (_assetPolicyId, _assetName, 100),
-        //     //     (7283, new { action = "sell", rate = "0.000003" })
-        //     // );
-        // }).ConfigureAwait(false).GetAwaiter().GetResult();
-
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
