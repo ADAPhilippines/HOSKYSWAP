@@ -273,7 +273,7 @@
                                 <div class="transition-all mud-ripple grid grid-cols-4 text-center p-2 cursor-pointer hover:selected-order">
                                     <div class="text-center text-green-500">@order.Action.ToUpper()</div>
                                     <div class="text-center text-green-500">@(order.Rate) $ADA</div>
-                                    <div class="text-center text-green-500">@($"{order.Total:N0}") $ADA</div>
+                                    <div class="text-center text-green-500">@($"{(order.Total / 1000000):N0}") $ADA</div>
                                     <div class="text-center text-green-500">@(order.UpdatedAt.ToLocalTime())</div>
                                 </div>
                             }
