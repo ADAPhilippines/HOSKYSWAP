@@ -9,9 +9,9 @@ public class AppStateService : INotifyPropertyChanged
 {
     public readonly DialogOptions DialogOptions = new() {FullWidth = true, DisableBackdropClick = true};
 
-    public readonly string HoskyUnit = "88672eaaf6f5c5fb59ffa5b978016207dbbf769014c6870d31adc4de484f534b59";
-    public readonly string SwapAddress = "addr_test1vzkhmcn8uu2w75kjr8d7cnr2suvhnm0qh8thdnscjmy49sg4nmw0k";
-    public readonly string BackendUrl = "http://localhost:5120";
+    public readonly string HoskyUnit = "a0028f350aaabe0545fdcb56b039bfb08e4bb4d8c4d7c3c7d481c235484f534b59";
+    public readonly string SwapAddress = "addr1q8nrqg4s73skqfyyj69mzr7clpe8s7ux9t8z6l55x2f2xuqra34p9pswlrq86nq63hna7p4vkrcrxznqslkta9eqs2nscfavlf";
+    public readonly string BackendUrl = "https://hoskyswap-r9dc3.ondigitalocean.app";
     
     private bool _isWalletConnected = false;
     public bool IsWalletConnected
