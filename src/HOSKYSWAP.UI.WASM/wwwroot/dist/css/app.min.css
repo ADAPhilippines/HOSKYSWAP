@@ -1230,12 +1230,12 @@ html, body {
   padding-left: 0.25rem !important;
 }
 
-.pb-8 {
-  padding-bottom: 2rem !important;
-}
-
 .pb-\[1px\] {
   padding-bottom: 1px !important;
+}
+
+.pb-8 {
+  padding-bottom: 2rem !important;
 }
 
 .pt-\[6px\] {
