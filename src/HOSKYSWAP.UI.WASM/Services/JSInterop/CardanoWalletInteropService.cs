@@ -13,6 +13,12 @@ public class CardanoWalletInteropService
         _jsRuntime = jsRuntime;
     }
 
+    public async ValueTask SetBackendUrl(string url)
+    {
+        if (_jsRuntime is null) return;
+        await _jsRuntime.InvokeVoidAsync("CardanoWalletInterop.SetBackendServerUrl", url);
+    }
+
     public async ValueTask<bool> HasNamiAsync()
     {
         if (_jsRuntime is null) return false;
@@ -67,8 +73,8 @@ public class CardanoWalletInteropService
         if (!IsErrorHandlerSet)
             await SetErrorHandlerAsync();
     }
-    
-    public async ValueTask SetErrorHandlerAsync()
+
+    private async ValueTask SetErrorHandlerAsync()
     {
         if (_jsRuntime is null) return;
         var objRef = DotNetObjectReference.Create(this);

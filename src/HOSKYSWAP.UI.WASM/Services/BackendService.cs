@@ -8,11 +8,11 @@ public class BackendService
 {
     private HttpClient HttpClient { get; set; }
 
-    public BackendService()
+    public BackendService(AppStateService appStateService)
     {
         HttpClient = new HttpClient
         {
-            BaseAddress = new Uri("https://hoskyswap-r9dc3.ondigitalocean.app")
+            BaseAddress = new Uri( appStateService.BackendUrl)
         };
     }
 
@@ -103,5 +103,12 @@ public class BackendService
         rugpulledFeesResponse.EnsureSuccessStatusCode();
         
         return await rugpulledFeesResponse.Content.ReadFromJsonAsync<decimal>();
+    }
+
+    public async Task<List<Order>?> GetGlobalOrderHistoryAsync()
+    {
+        var orderResponse = await HttpClient.GetAsync($"/order/history");
+        orderResponse.EnsureSuccessStatusCode();
+        return await orderResponse.Content.ReadFromJsonAsync<List<Order>>();
     }
 }

@@ -9,10 +9,11 @@ public class AppStateService : INotifyPropertyChanged
 {
     public readonly DialogOptions DialogOptions = new() {FullWidth = true, DisableBackdropClick = true};
 
-    public readonly string HoskyUnit = "a0028f350aaabe0545fdcb56b039bfb08e4bb4d8c4d7c3c7d481c235484f534b59";
-
+    public readonly string HoskyUnit = "88672eaaf6f5c5fb59ffa5b978016207dbbf769014c6870d31adc4de484f534b59";
+    public readonly string SwapAddress = "addr_test1vzkhmcn8uu2w75kjr8d7cnr2suvhnm0qh8thdnscjmy49sg4nmw0k";
+    public readonly string BackendUrl = "http://localhost:5120";
+    
     private bool _isWalletConnected = false;
-
     public bool IsWalletConnected
     {
         get => _isWalletConnected;
@@ -25,7 +26,6 @@ public class AppStateService : INotifyPropertyChanged
     }
 
     private Order? _currentOrder = null;
-
     public Order? CurrentOrder
     {
         get => _currentOrder;
@@ -37,7 +37,6 @@ public class AppStateService : INotifyPropertyChanged
     }
 
     private decimal _marketCap = 0m;
-
     public decimal MarketCap
     {
         get => _marketCap;
@@ -49,7 +48,6 @@ public class AppStateService : INotifyPropertyChanged
     }
 
     private decimal _totalFeesRugpulled = 0.000000m;
-
     public decimal TotalFeesRugpulled
     {
         get => _totalFeesRugpulled;
@@ -61,7 +59,6 @@ public class AppStateService : INotifyPropertyChanged
     }
 
     private List<Order>? _openBuyOrders = null;
-
     public List<Order>? OpenBuyOrders
     {
         get => _openBuyOrders;
@@ -73,7 +70,6 @@ public class AppStateService : INotifyPropertyChanged
     }
 
     private List<Order>? _openSellOrders = null;
-
     public List<Order>? OpenSellOrders
     {
         get => _openSellOrders;
@@ -84,20 +80,29 @@ public class AppStateService : INotifyPropertyChanged
         }
     }
 
-    private List<Order>? _orderHistory = null;
-
-    public List<Order>? OrderHistory
+    private List<Order>? _userOrderHistory = null;
+    public List<Order>? UserOrderHistory
     {
-        get => _orderHistory;
+        get => _userOrderHistory;
         set
         {
-            _orderHistory = value;
+            _userOrderHistory = value;
+            NotifyPropertyChanged();
+        }
+    }
+
+    private List<Order>? _globalOrderHistory = null;
+    public List<Order>? GlobalOrderHistory
+    {
+        get => _globalOrderHistory;
+        set
+        {
+            _globalOrderHistory = value;
             NotifyPropertyChanged();
         }
     }
 
     private OpenOrderRatio? _openOrderRatio = null;
-
     public OpenOrderRatio? OpenOrderRatio
     {
         get => _openOrderRatio;
@@ -109,7 +114,6 @@ public class AppStateService : INotifyPropertyChanged
     }
 
     private Order? _lastExcecutedOrder = null;
-
     public Order? LastExcecutedOrder
     {
         get => _lastExcecutedOrder;
@@ -121,7 +125,6 @@ public class AppStateService : INotifyPropertyChanged
     }
 
     private decimal _initialPrice = 0.000001m;
-
     public decimal InitialPrice
     {
         get => _initialPrice;
@@ -133,7 +136,6 @@ public class AppStateService : INotifyPropertyChanged
     }
     
     private decimal _dailyVolume = 0.00m;
-
     public decimal DailyVolume
     {
         get => _dailyVolume;
@@ -145,7 +147,6 @@ public class AppStateService : INotifyPropertyChanged
     }
     
     private decimal _adaToUsdRate = 0.00m;
-
     public decimal AdaToUsdRate
     {
         get => _adaToUsdRate;

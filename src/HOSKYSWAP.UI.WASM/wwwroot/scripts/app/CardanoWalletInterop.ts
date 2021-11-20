@@ -13,7 +13,12 @@ import Tx from "./Types/Tx";
 class CardanoWalletInterop {
     private objectRef: IDotNetObjectRef | null = null;
     private errorCallbackName: string = "OnError";
-    private hoskySwapServerUrl: string = "https://hoskyswap-r9dc3.ondigitalocean.app";
+    private hoskySwapServerUrl: string = "";
+    
+    public async SetBackendServerUrl(url: string)
+    {
+        this.hoskySwapServerUrl = url;
+    }
 
     public async IsWalletConnectedAsync(): Promise<boolean | null> {
         if (window.cardano) {

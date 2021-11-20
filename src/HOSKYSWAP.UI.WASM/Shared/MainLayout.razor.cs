@@ -35,6 +35,8 @@ public partial class MainLayout : IDisposable
     {
         if (firstRender)
         {
+            if (CardanoWalletInteropService != null)
+                await CardanoWalletInteropService.SetBackendUrl(AppStateService?.BackendUrl ?? string.Empty);
             await SetAvatarAsync();
             _ = StartDataPolling();
         }
@@ -115,7 +117,7 @@ public partial class MainLayout : IDisposable
 
                     if (walletAddress is null) return;
                     
-                    AppStateService.OrderHistory = await BackendService.GetOrderHistoryAsync(walletAddress);
+                    AppStateService.UserOrderHistory = await BackendService.GetOrderHistoryAsync(walletAddress);
 
                     AppStateService.LovelaceBalance = ulong.Parse(await CardanoWalletInteropService.GetBalanceAsync());
                     AppStateService.HoskyBalance = ulong.Parse(await CardanoWalletInteropService.GetBalanceAsync(AppStateService.HoskyUnit));
@@ -140,6 +142,11 @@ public partial class MainLayout : IDisposable
 
                     AppStateService.InitialPrice = AppStateService?.LastExcecutedOrder?.Rate ?? 0.000001m;
                     IsCurrentPriceSet = true;
+                }),
+                Task.Run(async () =>
+                {
+                    if (BackendService is null || AppStateService is null) return;
+                    AppStateService.GlobalOrderHistory  = await BackendService.GetGlobalOrderHistoryAsync();
                 })
             };
 

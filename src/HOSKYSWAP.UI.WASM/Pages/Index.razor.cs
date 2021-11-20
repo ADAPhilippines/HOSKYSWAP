@@ -32,7 +32,6 @@ public partial class IndexBase : ComponentBase, IDisposable
     protected string ToErrorMessage = string.Empty;
     protected string FromErrorMessage = string.Empty;
     private string DidReadDialogStorageKey = "DidReadDialog";
-    private string SwapAddress { get; set; } = "addr1vxfyhp4vxj2ef7udvfef9y8qhtjz5ns8n5x7mgxvk85acdsnfws74";
     private string HoskyUnit { get; set; } = string.Empty;
     protected bool IsDisclaimerDialogVisible { get; set; }
     protected bool IsGeneralDialogVisible { get; set; }
@@ -310,7 +309,7 @@ public partial class IndexBase : ComponentBase, IDisposable
         {
             var txId = await CardanoWalletInteropService.SendAssetsAsync(new TxOutput
                 {
-                    Address = SwapAddress,
+                    Address = AppStateService?.SwapAddress ?? string.Empty,
                     Amount = new List<Asset>
                     {
                         new Asset
@@ -352,7 +351,7 @@ public partial class IndexBase : ComponentBase, IDisposable
         {
             var txId = await CardanoWalletInteropService.SendAssetsAsync(new TxOutput()
                 {
-                    Address = SwapAddress,
+                    Address = AppStateService?.SwapAddress ?? string.Empty,
                     Amount = new List<Asset>
                     {
                         new Asset
@@ -390,7 +389,7 @@ public partial class IndexBase : ComponentBase, IDisposable
 
             var txId = await CardanoWalletInteropService.SendAssetsAsync(new TxOutput()
                 {
-                    Address = SwapAddress,
+                    Address = AppStateService?.SwapAddress ?? string.Empty,
                     Amount = new List<Asset>
                     {
                         new Asset

@@ -936,6 +936,10 @@ html, body {
   width: 400px !important;
 }
 
+.w-\[816px\] {
+  width: 816px !important;
+}
+
 .w-\[3rem\] {
   width: 3rem !important;
 }
@@ -1027,6 +1031,10 @@ html, body {
 
 .grid-cols-2 {
   grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+.grid-cols-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
 }
 
 .flex-row {

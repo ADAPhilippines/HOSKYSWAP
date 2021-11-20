@@ -129,9 +129,9 @@
                             <th class="pb-2 w-1/4">Action</th>
                             <th class="pb-2 w-1/4">Date</th>
                         </tr>
-                        @if (AppStateService?.OrderHistory is not null)
+                        @if (AppStateService?.UserOrderHistory is not null)
                         {
-                            @foreach (var order in AppStateService.OrderHistory)
+                            @foreach (var order in AppStateService.UserOrderHistory)
                             {
                                 <tr class="transition-all text-center cursor-pointer odd:bg-dark-color even:bg-row-color hover:selected-order">
                                     <td class="text-left pl-1 py-1 w-full">
@@ -244,6 +244,46 @@
     </div>
 </div>
 
+<div class="flex flex-col"><div class="flex flex-row w-full justify-center pb-8">
+        <MudCard Class="backdrop-filter backdrop-blur-[5px] bg-transparent-dark flex flex-col justify-start mt-4 text-white h-[400px] w-[816px] pb-[1px] cursor-default">
+            <div class="text-center font-semibold text-xl p-2 mt-4">Recently Completed Orders</div>
+            <div class="flex flex-col">
+                <div class="grid grid-cols-4 gap-0 p-2">
+                    <div class="font-semibold text-center">Action</div>
+                    <div class="font-semibold text-center">Price ($ADA)</div>
+                    <div class="font-semibold text-center">Total</div>
+                    <div class="font-semibold text-center">Date</div>
+                </div>
+                <div class="overflow-y-auto max-h-[300px] ">
+                    @if (AppStateService?.GlobalOrderHistory is not null)
+                    {
+                        @foreach (var order in AppStateService.GlobalOrderHistory)
+                        {
+                            @if (order.Action == "sell")
+                            {
+                                <div class="transition-all mud-ripple grid grid-cols-4 text-center p-2 cursor-pointer hover:selected-order">
+                                    <div class="text-center text-red-500">@order.Action.ToUpper()</div>
+                                    <div class="text-center text-red-500">@(order.Rate) $ADA</div>
+                                    <div class="text-center text-red-500">@($"{order.Total:N0}") $HOSKY</div>
+                                    <div class="text-center text-green-500">@(order.UpdatedAt.ToLocalTime())</div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="transition-all mud-ripple grid grid-cols-4 text-center p-2 cursor-pointer hover:selected-order">
+                                    <div class="text-center text-green-500">@order.Action.ToUpper()</div>
+                                    <div class="text-center text-green-500">@(order.Rate) $ADA</div>
+                                    <div class="text-center text-green-500">@($"{order.Total:N0}") $ADA</div>
+                                    <div class="text-center text-green-500">@(order.UpdatedAt.ToLocalTime())</div>
+                                </div>
+                            }
+                        }
+                    }
+                </div>
+            </div>
+        </MudCard>
+    </div>
+</div>
 
 <MudDialog @bind-IsVisible="IsDisclaimerDialogVisible" Options="@AppStateService?.DialogOptions">
     <TitleContent>

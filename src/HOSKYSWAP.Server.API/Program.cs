@@ -161,6 +161,15 @@ app.MapGet("/order/total/rugpulled", async (HoskyDbContext dbContext) =>
 		throw new Exception("Server error occured. Please try again.");
 });
 
+app.MapGet("/order/history", async (HoskyDbContext dbContext) => {
+	if (dbContext.Orders is not null)
+	{
+		return await dbContext.Orders.Where(e => e.Status == Status.Filled).OrderByDescending(e => e.UpdatedAt).Take(100).ToListAsync<Order>();
+	}
+	else
+		throw new Exception("Server error occured. Please try again.");
+});
+
 app.MapPost("/tx/submit", SumbitTx);
 
 _logger.LogInformation($"API Server running at: {DateTimeOffset.Now}");
