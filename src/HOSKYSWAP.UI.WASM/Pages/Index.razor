@@ -118,6 +118,54 @@
         }
 
     </MudTabPanel>
+    <MudTabPanel Icon="@Icons.Filled.AttachMoney" Text="Stake" Class="swap-tab">
+        <div class="flex flex-col justify-center mt-4 p-4 pb-4 cursor-default">
+            <div>
+                <div class="font-semibold text-lg float-left">Total Stake</div>
+                <div class="font-semibold text-lg float-right">My Stake</div>
+            </div>
+            <div>
+                <div class="float-left text-currency">@($"{AppStateService?.TotalStaked:N0}") $HOSKY</div>
+                <div class="float-right text-currency">@($"{AppStateService?.UserStaked:N0}") $HOSKY</div>
+            </div>
+            <div>
+                <div class="text-center text-lg mt-4">
+                    <span>REWARDS: </span>
+                    <span class="text-currency">0 $ADA</span>
+                </div>
+            </div>
+            <div>
+                <p class="font-bold text-green-500 text-center mt-4 mb-4">
+                    <span>By staking your</span>
+                    <span class="text-currency">$HOSKY</span>
+                    <span>tokens. You will be able to earn passive</span>
+                    <span class="text-currency">$ADA</span>
+                    <span>rewards. Where does these rewards come from? Well from the rugpull fees ofcourse!</span>
+                    <span>80% of the fees will be allocated towards the stakers, your share will be proportionate to your stake vs the total stake.</span>
+                    <br />
+                    <br />
+                    <span>Your rewards are counted at the date when you started staking until the time you withdraw your stake.</span>
+                </p>
+            </div>
+            @if (AppStateService?.UserStaked > 0)
+            {
+                <div class="flex flex-col align-center gap-y-2 mt-4">
+                    <MudButton OnClick="OnBtnUnStakeClicked" Class="text-sm bg-gradient-to-r from-aph-indigo to-aph-blue filter brightness-100 hover:brightness-125 text-white font-semibold rounded-lg p-3 normal-case w-full">
+                        <span>Unstake!</span>
+                    </MudButton>
+                </div>
+            }
+            else
+            {
+                <div class="flex flex-col align-center gap-y-2 mt-4">
+                    <MudTextField Value="HoskyToStake" ValueChanged="OnHoskyToStakeChanged" Placeholder="0.0" Immediate="true" InputType="InputType.Number" Variant="Variant.Outlined" Margin="Margin.None" Class="hsky-textfield inline font-semibold w-full" T="ulong"></MudTextField>
+                    <MudButton OnClick="OnBtnStakeClicked" Class="text-sm bg-gradient-to-r from-aph-indigo to-aph-blue filter brightness-100 hover:brightness-125 text-white font-semibold rounded-lg p-3 normal-case w-full">
+                        <span>Stake Now!</span>
+                    </MudButton>
+                </div>
+            }
+        </div>
+    </MudTabPanel>
     <MudTabPanel Icon="@Icons.Filled.History" Text="History">
         <div class="flex flex-col justify-start align-center mt-4 pb-[4px] h-[504px] cursor-default">
             <div class="font-semibold text-lg">Swap History</div>

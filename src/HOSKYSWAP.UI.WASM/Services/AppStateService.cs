@@ -19,6 +19,30 @@ public class AppStateService : INotifyPropertyChanged
     public readonly string SwapAddress = "addr1vxfyhp4vxj2ef7udvfef9y8qhtjz5ns8n5x7mgxvk85acdsnfws74";
     public readonly string BackendUrl = "https://hoskyswap-r9dc3.ondigitalocean.app";
 #endif
+
+    private ulong _totalStaked = 0UL;
+    public ulong TotalStaked
+    {
+        get => _totalStaked;
+        set
+        {
+            _totalStaked = value;
+            NotifyPropertyChanged();
+        }
+    }
+
+    private ulong _userStaked = 0UL;
+
+    public ulong UserStaked
+    {
+        get => _userStaked;
+        set
+        {
+            _userStaked = value;
+            NotifyPropertyChanged();
+        }
+    }
+    
     private bool _isWalletConnected = false;
     public bool IsWalletConnected
     {

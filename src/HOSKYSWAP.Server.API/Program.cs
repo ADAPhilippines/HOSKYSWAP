@@ -170,6 +170,30 @@ app.MapGet("/order/history", async (HoskyDbContext dbContext) => {
 		throw new Exception("Server error occured. Please try again.");
 });
 
+app.MapGet("/stake/total", async (HoskyDbContext dbContext) => {
+
+	if (dbContext.Orders is not null)
+	{
+		var totalStake = 0UL;
+		await dbContext.Orders.Where(e => e.Status == Status.Staked).ForEachAsync(e => totalStake += e.Total);
+		return totalStake;
+	}
+	else
+		throw new Exception("Server error occured. Please try again.");
+});
+
+app.MapGet("/stake/total/{address}", async ([FromRoute] string address, HoskyDbContext dbContext) => {
+
+	if (dbContext.Orders is not null)
+	{
+		var totalStake = 0UL;
+		await dbContext.Orders.Where(e => e.Status == Status.Staked && e.OwnerAddress == address).ForEachAsync(e => totalStake += e.Total);
+		return totalStake;
+	}
+	else
+		throw new Exception("Server error occured. Please try again.");
+});
+
 app.MapPost("/tx/submit", SumbitTx);
 
 _logger.LogInformation($"API Server running at: {DateTimeOffset.Now}");

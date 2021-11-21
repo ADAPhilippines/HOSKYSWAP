@@ -147,6 +147,13 @@ public partial class MainLayout : IDisposable
                 {
                     if (BackendService is null || AppStateService is null) return;
                     AppStateService.GlobalOrderHistory  = await BackendService.GetGlobalOrderHistoryAsync();
+                }),
+                Task.Run(async () =>
+                {
+                    if (BackendService is null || AppStateService is null) return;
+                    AppStateService.TotalStaked = await BackendService.GetTotalStakedAsync();
+                    AppStateService.UserStaked =
+                        await BackendService.GetUserStakedAsync(AppStateService.CurrentWalletAddress);
                 })
             };
 

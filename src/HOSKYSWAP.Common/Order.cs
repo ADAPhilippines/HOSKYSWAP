@@ -8,7 +8,10 @@ public enum Status
     Error,
     Ignored,
     Confirming,
-    Cancelling
+    Cancelling,
+    Staked,
+    Unstaking,
+    Unstaked
 }
 
 public record Order

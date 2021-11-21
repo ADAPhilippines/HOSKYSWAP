@@ -20,9 +20,8 @@ public partial class IndexBase : ComponentBase, IDisposable
     protected string FromToken { get; set; } = "ADA";
     protected decimal FromAmount { get; set; } = 5m;
     protected decimal ToAmount { get; set; } = 5000000;
+    protected ulong HoskyToStake { get; set; } = 0;
     protected decimal PriceAmount { get; set; } = 0.000001m;
-    protected double BuyRatioWidth { get; set; } = 70;
-    protected double SellRatioWidth { get; set; } = 30;
     protected const decimal ERROR_MARGIN = 0.0001m;
     protected bool DisplayToError { get; set; }
     protected bool DisplayFromError { get; set; }
@@ -59,6 +58,10 @@ public partial class IndexBase : ComponentBase, IDisposable
         if (AppStateService is not null && e.PropertyName == "InitialPrice")
         {
             PriceAmount = AppStateService.InitialPrice;
+            
+            if(HoskyToStake == 0)
+                HoskyToStake = AppStateService.HoskyBalance;
+            
             OnPriceAmountChange(PriceAmount);
         }
         StateHasChanged();
@@ -147,6 +150,11 @@ public partial class IndexBase : ComponentBase, IDisposable
 
         ValidateForm();
         await InvokeAsync(StateHasChanged);
+    }
+
+    protected void OnHoskyToStakeChanged(ulong hoskyToStake)
+    {
+        HoskyToStake = hoskyToStake;
     }
 
     protected async void OnPriceAmountChange(decimal priceAmount)
@@ -302,6 +310,50 @@ public partial class IndexBase : ComponentBase, IDisposable
         await InvokeAsync(StateHasChanged);
     }
 
+    protected async void OnBtnStakeClicked()
+    {
+        IsGeneralDialogVisible = true;
+        GeneralDialogMessage = "Submitting your stake...";
+        var txId = await StakeHoskyAsync();
+        if (txId is null || CardanoWalletInteropService is null) return;
+        GeneralDialogMessage = $"Waiting for confirmation, TxID: {txId}";
+        await InvokeAsync(StateHasChanged);
+        var tx = await CardanoWalletInteropService.GetTransactionAsync(txId);
+        if (tx is not null)
+        { 
+            IsGeneralDialogVisible = false;
+            await InvokeAsync(StateHasChanged);
+        }
+        else
+        {
+            await SomethingWentWrongAsync();
+        }
+        
+        await InvokeAsync(StateHasChanged);
+    }
+    
+    protected async void OnBtnUnStakeClicked()
+    {
+        IsGeneralDialogVisible = true;
+        GeneralDialogMessage = "Submitting your stake...";
+        var txId = await UnStakeHoskyAsync();
+        if (txId is null || CardanoWalletInteropService is null) return;
+        GeneralDialogMessage = $"Waiting for confirmation, TxID: {txId}";
+        await InvokeAsync(StateHasChanged);
+        var tx = await CardanoWalletInteropService.GetTransactionAsync(txId);
+        if (tx is not null)
+        { 
+            IsGeneralDialogVisible = false;
+            await InvokeAsync(StateHasChanged);
+        }
+        else
+        {
+            await SomethingWentWrongAsync();
+        }
+        
+        await InvokeAsync(StateHasChanged);
+    }
+    
     private async Task<string?> BuyHoskyAsync()
     {
         if (CardanoWalletInteropService is null) return null;
@@ -335,14 +387,6 @@ public partial class IndexBase : ComponentBase, IDisposable
         }
     }
 
-    private async Task SomethingWentWrongAsync()
-    {
-        IsGeneralDialogVisible = true;
-        IsGeneralActionVisible = true;
-        GeneralDialogMessage = "Something went wrong, please try again.";
-        await InvokeAsync(StateHasChanged);
-    }
-
     private async Task<string?> SellHoskyAsync()
     {
         if (CardanoWalletInteropService is null) return null;
@@ -370,6 +414,75 @@ public partial class IndexBase : ComponentBase, IDisposable
                 {
                     rate = PriceAmount.ToString(CultureInfo.InvariantCulture),
                     action = "sell"
+                }));
+
+            return txId;
+        }
+        catch
+        {
+            await SomethingWentWrongAsync();
+            return null;
+        }
+    }
+
+    private async Task<string?> StakeHoskyAsync()
+    {
+        if (CardanoWalletInteropService is null) return null;
+
+        try
+        {
+            var txId = await CardanoWalletInteropService.SendAssetsAsync(new TxOutput()
+                {
+                    Address = AppStateService?.SwapAddress ?? string.Empty,
+                    Amount = new List<Asset>
+                    {
+                        new Asset
+                        {
+                            Unit = HoskyUnit,
+                            Quantity = HoskyToStake
+                        },
+                        new Asset
+                        {
+                            Unit = "lovelace",
+                            Quantity = 69_4200 + 1_500_000
+                        }
+                    }
+                },
+                JsonSerializer.Serialize(new
+                {
+                    action = "stake"
+                }));
+
+            return txId;
+        }
+        catch
+        {
+            await SomethingWentWrongAsync();
+            return null;
+        }
+    }
+    
+    private async Task<string?> UnStakeHoskyAsync()
+    {
+        if (CardanoWalletInteropService is null) return null;
+
+        try
+        {
+            var txId = await CardanoWalletInteropService.SendAssetsAsync(new TxOutput
+                {
+                    Address = AppStateService?.SwapAddress ?? string.Empty,
+                    Amount = new List<Asset>
+                    {
+                        new()
+                        {
+                            Unit = "lovelace",
+                            Quantity = 69_4200 + 1_500_000
+                        }
+                    }
+                },
+                JsonSerializer.Serialize(new
+                {
+                    action = "unstake"
                 }));
 
             return txId;
@@ -410,6 +523,14 @@ public partial class IndexBase : ComponentBase, IDisposable
             await SomethingWentWrongAsync();
             return null;
         }
+    }
+
+    private async Task SomethingWentWrongAsync()
+    {
+        IsGeneralDialogVisible = true;
+        IsGeneralActionVisible = true;
+        GeneralDialogMessage = "Something went wrong, please try again.";
+        await InvokeAsync(StateHasChanged);
     }
 
     protected decimal RoundAmount(decimal amt)

@@ -836,6 +836,10 @@ html, body {
   margin-right: 6px !important;
 }
 
+.mb-4 {
+  margin-bottom: 1rem !important;
+}
+
 .inline {
   display: inline !important;
 }

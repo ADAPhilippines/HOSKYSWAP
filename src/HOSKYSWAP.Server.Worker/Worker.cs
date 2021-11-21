@@ -60,7 +60,7 @@ public class Worker : BackgroundService
         _blockfrostTransactionsService = _blockfrostServiceProvider.GetService<ITransactionsService>();
         _blockfrostAddressService = _blockfrostServiceProvider.GetService<IAddressesService>();
         _marginOfErrorLovelace = ulong.Parse(_config["MarginOfErrorLovelace"]);
-        _changeWalletAddress = _config["ChangeWalletAddress"];
+        // _changeWalletAddress = _config["ChangeWalletAddress"];
 
         // Initialization Procedures
         RestoreWalletFromSeed();
@@ -76,6 +76,7 @@ public class Worker : BackgroundService
                 {
                     var networkParams = await _blockfrostEpochService.GetLatestParametersAsync(stoppingToken);
                     _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
+                    await ProcessUnstakesAsync(stoppingToken);
                     await ProcessCancelledOrdersAsync(stoppingToken);
                     await SyncTxConfirmationsAsync(stoppingToken);
                     await SyncNewOrdersAsync(stoppingToken);
@@ -88,6 +89,11 @@ public class Worker : BackgroundService
                 _logger.LogError(ex, "Error in Worker");
             }
         }
+    }
+
+    private async Task ProcessUnstakesAsync(CancellationToken stoppingToken)
+    {
+
     }
 
     private async Task ProcessCancelledOrdersAsync(CancellationToken stoppingToken)
@@ -276,13 +282,50 @@ public class Worker : BackgroundService
                             {
                                 OwnerAddress = txUtxos.Inputs.First().Address,
                                 TxHash = utxo.TxHash,
-                                Action = string.Empty,
+                                Action = action,
                                 Rate = 0,
                                 Total = 0,
                                 Status = Status.Cancelling,
                                 TxIndexes = siblingUtxos.Select(e => e.TxIndex).ToList(),
                                 ExecuteTxId = string.Empty
                             });
+                        }
+                        else if (action != null && action == "stake")
+                        {
+                            var stakeTotal = 0UL;
+
+                            siblingUtxos
+                                .Select(e => ulong.Parse(e.Amount.Where(a => a.Unit == $"{_assetPolicyId}{_assetName}").First().Quantity))
+                                .ToList().ForEach(e => stakeTotal += e);
+
+                            _dbContext.Orders.Add(new()
+                            {
+                                OwnerAddress = txUtxos.Inputs.First().Address,
+                                TxHash = utxo.TxHash,
+                                Action = action,
+                                Rate = 0,
+                                Total = stakeTotal,
+                                Status = Status.Staked,
+                                TxIndexes = siblingUtxos.Select(e => e.TxIndex).ToList(),
+                                ExecuteTxId = string.Empty
+                            });
+
+                            _logger.LogInformation("New Stake, {0:N0} $HOSKY, TxHash: {1}", stakeTotal, utxo.TxHash);
+                        }
+                        else if (action != null && action == "unstake")
+                        {
+                            _dbContext.Orders.Add(new()
+                            {
+                                OwnerAddress = txUtxos.Inputs.First().Address,
+                                TxHash = utxo.TxHash,
+                                Action = action,
+                                Rate = 0,
+                                Total = 0,
+                                Status = Status.Unstaking,
+                                TxIndexes = siblingUtxos.Select(e => e.TxIndex).ToList(),
+                                ExecuteTxId = string.Empty
+                            });
+                            _logger.LogInformation("Unstaking, TxHash: {1}", utxo.TxHash);
                         }
                         else if (actionTryGetResult &&
                             hoskySwapMeta.JsonMetadata.TryGetProperty("rate", out var rateProp) &&
@@ -741,7 +784,7 @@ public class Worker : BackgroundService
         return txId.Replace("\"", string.Empty);
     }
 
-    async Task<bool> IsTxConfirmedAsync(string txId)
+    private async Task<bool> IsTxConfirmedAsync(string txId)
     {
         var result = false;
         if (_blockfrostTransactionsService is not null)
@@ -785,6 +828,7 @@ public class Worker : BackgroundService
         );
 
         _walletAddressString = _walletAddress.ToString();
+        _changeWalletAddress = _walletAddressString;
         _walletPublicKey = paymentPub;
         _walletPrivateKey = paymentPrv;
     }

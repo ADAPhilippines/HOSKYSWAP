@@ -111,4 +111,14 @@ public class BackendService
         orderResponse.EnsureSuccessStatusCode();
         return await orderResponse.Content.ReadFromJsonAsync<List<Order>>();
     }
+
+    public async Task<ulong> GetTotalStakedAsync()
+    {
+        return await HttpClient.GetFromJsonAsync<ulong>("/stake/total");
+    }
+    
+    public async Task<ulong> GetUserStakedAsync(string address)
+    {
+        return await HttpClient.GetFromJsonAsync<ulong>($"/stake/total/{address}");
+    }
 }
