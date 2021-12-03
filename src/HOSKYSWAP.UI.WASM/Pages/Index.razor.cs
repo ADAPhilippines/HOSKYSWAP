@@ -473,7 +473,7 @@ public partial class IndexBase : ComponentBase, IDisposable
                     Address = AppStateService?.SwapAddress ?? string.Empty,
                     Amount = new List<Asset>
                     {
-                        new()
+                        new Asset
                         {
                             Unit = "lovelace",
                             Quantity = 69_4200 + 1_500_000

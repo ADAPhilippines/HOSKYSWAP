@@ -99,10 +99,10 @@ public class BackendService
     
     public async Task<decimal> GetTotalFeesRugpulledAsync()
     {
-        var rugpulledFeesResponse = await HttpClient.GetAsync("/order/total/rugpulled");
-        rugpulledFeesResponse.EnsureSuccessStatusCode();
+        var rugPulledFeesResponse = await HttpClient.GetAsync("/order/total/rugpulled");
+        rugPulledFeesResponse.EnsureSuccessStatusCode();
         
-        return await rugpulledFeesResponse.Content.ReadFromJsonAsync<decimal>();
+        return await rugPulledFeesResponse.Content.ReadFromJsonAsync<decimal>();
     }
 
     public async Task<List<Order>?> GetGlobalOrderHistoryAsync()
