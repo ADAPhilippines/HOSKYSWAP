@@ -28,7 +28,7 @@ public class Worker : BackgroundService
     private string _assetName { get; set; } = string.Empty;
     private string _walletSeed { get; set; } = string.Empty;
     private ulong _swapFee { get; set; } = 694200;
-    private ulong _marginOfErrorLovelace = 100;
+    private ulong _marginOfErrorLovelace = 100000;
     private string _blockfrostAPIKey { get; set; } = string.Empty;
     private string _blockfrostAPINetwork { get; set; } = string.Empty;
     private string _changeWalletAddress { get; set; } = string.Empty;
