@@ -401,7 +401,7 @@ public class Worker : BackgroundService
           {
             ulong[] nums = new ulong[] { buyOrder.Total, (ulong)(e.Total * e.Rate * 1000000) };
             Array.Sort(nums);
-            nums.Reverse();
+            nums = nums.Reverse().ToArray();
 
             return e.Action == "sell" &&
                 e.Rate == buyOrder.Rate &&
@@ -424,7 +424,7 @@ public class Worker : BackgroundService
           {
             ulong[] nums = new ulong[] { e.Total, (ulong)(sellOrder.Total * sellOrder.Rate * 1000000) };
             Array.Sort(nums);
-            nums.Reverse();
+            nums = nums.Reverse().ToArray();
 
             return e.Action == "buy" &&
                 e.Rate == sellOrder.Rate &&
