@@ -17,7 +17,7 @@ public class AppStateService : INotifyPropertyChanged
 #if !DEBUG
     public readonly string HoskyUnit = "a0028f350aaabe0545fdcb56b039bfb08e4bb4d8c4d7c3c7d481c235484f534b59";
     public readonly string SwapAddress = "addr1vxfyhp4vxj2ef7udvfef9y8qhtjz5ns8n5x7mgxvk85acdsnfws74";
-    public readonly string BackendUrl = "https://hoskyswap-r9dc3.ondigitalocean.app";
+    public readonly string BackendUrl = "https://api.hosky-swap.io";
 #endif
     private bool _isWalletConnected = false;
     public bool IsWalletConnected
