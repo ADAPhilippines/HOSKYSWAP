@@ -189,7 +189,7 @@ async Task SumbitTx(HttpContext ctx)
 		httpClient.DefaultRequestHeaders.Add("project_id", blockfrostProjectID);
 		var byteContent = new ByteArrayContent(memStream.ToArray());
 		byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/cbor");
-		var txResponse = await httpClient.PostAsync($"{blockfrostAPI}/tx/submit", byteContent);
+		var txResponse = await httpClient.PostAsync("https://submit.adaph.io/api/v1.0/tx/submit", byteContent);
 		var txId = await txResponse.Content.ReadAsStringAsync();
 		txId = txId.Replace("\"", string.Empty);
 		Console.WriteLine(txId);
