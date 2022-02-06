@@ -744,11 +744,10 @@ public class Worker : BackgroundService
 
   private async Task<string> SubmitTxBytesAsync(byte[] txBytes)
   {
-    using var httpClient = new HttpClient { BaseAddress = new Uri($"https://cardano-{_blockfrostAPINetwork}.blockfrost.io/api/v0/") };
-    httpClient.DefaultRequestHeaders.Add("project_id", _blockfrostAPIKey);
+    using var httpClient = new HttpClient();
     var byteContent = new ByteArrayContent(txBytes);
     byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/cbor");
-    var txResponse = await httpClient.PostAsync("tx/submit", byteContent);
+    var txResponse = await httpClient.PostAsync("https://submit.adaph.io/api/v1.0/tx/submit", byteContent);
     var txId = await txResponse.Content.ReadAsStringAsync();
     return txId.Replace("\"", string.Empty);
   }
